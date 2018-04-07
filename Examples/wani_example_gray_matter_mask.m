@@ -1,0 +1,1 @@
+mask = which('scalped_avg152T1_graymatter_smoothed.img');
