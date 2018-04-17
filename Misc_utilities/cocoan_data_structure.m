@@ -84,7 +84,7 @@ if make_data && ~exist(fullfile(basedir, 'data'), 'dir')
     error('\nThe directory %s does not exist!!! Please check!!!', fullfile(basedir, 'data'));
 end
 
-if make_project && ~exist(fullfile(basedir, 'projects'), 'dir')
+if make_project && ~exist(fullfile(basedir, 'project'), 'dir')
     error('\nThe directory %s does not exist!!! Please check!!!', fullfile(basedir, 'projects'));
 end
 
@@ -104,16 +104,16 @@ if make_data
 end
 
 if make_project
-    proj_dir{1} = fullfile(basedir, 'projects', project_name);
-    proj_dir{2} = fullfile(basedir, 'projects', project_name, 'writing');
-    proj_dir{3} = fullfile(basedir, 'projects', project_name, 'literature');
-    proj_dir{4} = fullfile(basedir, 'projects', project_name, 'data');
-    proj_dir{5} = fullfile(basedir, 'projects', project_name, 'scripts');
-    proj_dir{6} = fullfile(basedir, 'projects', project_name, 'notes');
-    proj_dir{7} = fullfile(basedir, 'projects', project_name, 'analysis');
-    proj_dir{8} = fullfile(basedir, 'projects', project_name, 'analysis', 'behavioral');
-    proj_dir{9} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging');
-    proj_dir{10} = fullfile(basedir, 'projects', project_name, 'figures');
+    proj_dir{1} = fullfile(basedir, 'project', project_name);
+    proj_dir{2} = fullfile(basedir, 'project', project_name, 'writing');
+    proj_dir{3} = fullfile(basedir, 'project', project_name, 'literature');
+    proj_dir{4} = fullfile(basedir, 'project', project_name, 'data');
+    proj_dir{5} = fullfile(basedir, 'project', project_name, 'scripts');
+    proj_dir{6} = fullfile(basedir, 'project', project_name, 'notes');
+    proj_dir{7} = fullfile(basedir, 'project', project_name, 'analysis');
+    proj_dir{8} = fullfile(basedir, 'project', project_name, 'analysis', 'behavioral');
+    proj_dir{9} = fullfile(basedir, 'project', project_name, 'analysis', 'imaging');
+    proj_dir{10} = fullfile(basedir, 'project', project_name, 'figures');
 end
 
 if make_data

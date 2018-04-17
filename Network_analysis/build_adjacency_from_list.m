@@ -17,6 +17,7 @@ function A = build_adjacency_from_list(ij, varargin)
 % see  http://tuvalu.santafe.edu/~aaronc/courses/5352/
 
 dosparse = false;
+doweight = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
