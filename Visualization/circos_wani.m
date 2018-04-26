@@ -28,6 +28,17 @@ draw_node_top  = false;
 draw_circle = false;
 draw_node_edge = false;
 rotate_angle = 0;
+edge_alpha = 0.5;
+node_size = 150;
+
+% default (no group)
+group = 1:size(A,1);
+g_order = group;
+gcols = repmat([0 0 0], size(A,1),1);
+
+if isequal(unique(A), [0;1]) % binary adjacency matrix
+    pos_edge_color = [0 0 0];
+end
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -38,7 +49,10 @@ for i = 1:length(varargin)
                 lat_index = varargin{i+1};
             case {'group'}
                 group = varargin{i+1};
-                g_order = 1:numel(group); % default
+                if size(group,1) < size(group,2)
+                    group = group';
+                end
+                g_order = 1:numel(unique(group)); % default
             case {'group_color'}
                 gcols = varargin{i+1};
                 gcols_edge = gcols - .2;
@@ -48,6 +62,8 @@ for i = 1:length(varargin)
             case {'node_alpha'}
                 do_node_alpha = true;
                 node_alpha = varargin{i+1};
+            case {'edge_alpha'}
+                edge_alpha = varargin{i+1};
             case {'draw_node_top'}
                 draw_node_top = true;
             case {'draw_circle'}
@@ -56,6 +72,25 @@ for i = 1:length(varargin)
                 draw_node_edge = true;
             case {'rotate'}
                 rotate_angle = varargin{i+1};
+            case {'pos_edge_color'}
+                pos_edge_color = varargin{i+1};
+            case {'neg_edge_color'}
+                neg_edge_color = varargin{i+1};
+            case {'edge_color'} % same color for all edges
+                pos_edge_color = varargin{i+1};
+                neg_edge_color = varargin{i+1};
+            case {'node_color'} % same color for all nodes
+                gcols = varargin{i+1};
+                if size(gcols,1) == 1
+                    gcols = repmat(varargin{i+1}, size(A,1),1);
+                end
+            case {'node_size'}
+                node_size = varargin{i+1};
+            case {'node_edge_color'}
+                gcols_edge = varargin{i+1};
+                if size(gcols_edge, 1) == 1
+                    gcols_edge = repmat(gcols_edge, size(A,1),1);
+                end
         end
     end
 end
@@ -126,13 +161,13 @@ t = t - deg2rad(rotate_angle);
 
 if draw_circle
     tt = linspace(-pi, pi,1000)'; % theta for each node
-    plot(cos(tt), sin(tt), 'color', [.8 .8 .8], 'linewidth', 8);
+    plot(cos(tt), sin(tt), 'color', [.8 .8 .8], 'linewidth', 25);
     hold on;
 end
 
 for i = 1:length(A) %find(sumA == 0)
     % scatter(cos(t(i)),sin(t(i)), 50, gcols(group(i),:),  'filled', 'MarkerFaceAlpha', .5);
-    scatter(cos(t(i)),sin(t(i)), 150, gcols(group(i),:),  'filled');
+    scatter(cos(t(i)),sin(t(i)), node_size, gcols(group(i),:),  'filled');
     hold on;
 end
 
@@ -142,15 +177,15 @@ for i = find(sumA ~= 0)
     if weighted_node_size
         % scatter(cos(t(i)).*norm_factor3,sin(t(i)).*norm_factor3, 150*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled');
         if draw_node_edge
-            scatter(cos(t(i)), sin(t(i)), 150*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 3);
+            scatter(cos(t(i)), sin(t(i)), node_size*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 1);
         else
-            scatter(cos(t(i)), sin(t(i)), 150*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled');
+            scatter(cos(t(i)), sin(t(i)), node_size*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled');
         end
     else
         if draw_node_edge
-            scatter(cos(t(i)), sin(t(i)), 150, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 3 );
+            scatter(cos(t(i)), sin(t(i)), node_size, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 1);
         else
-            scatter(cos(t(i)), sin(t(i)), 150, gcols(group(i),:), 'filled');
+            scatter(cos(t(i)), sin(t(i)), node_size, gcols(group(i),:), 'filled');
         end
     end
     
@@ -184,13 +219,13 @@ for i = 1:length(w)
                     [u(1);v(1)],...
                     [u(2);v(2)],...
                     'LineWidth', lineWidth(i),...
-                    'PickableParts','none', 'color', [pos_edge_color .5]);
+                    'PickableParts','none', 'color', [pos_edge_color edge_alpha]);
             else
                 line(...
                     [u(1);v(1)],...
                     [u(2);v(2)],...
                     'LineWidth', -lineWidth(i),...
-                    'PickableParts','none', 'color', [neg_edge_color .5]);
+                    'PickableParts','none', 'color', [neg_edge_color edge_alpha]);
             end
         else % points are not diametric, so draw an arc
             u  = [cos(t(row(i)));sin(t(row(i)))];
@@ -215,13 +250,13 @@ for i = 1:length(w)
                     r*cos(theta)+x0,...
                     r*sin(theta)+y0,...
                     'LineWidth', lineWidth(i),...
-                    'PickableParts','none', 'color', [pos_edge_color .5]);
+                    'PickableParts','none', 'color', [pos_edge_color edge_alpha]);
             else
                 line(...
                     r*cos(theta)+x0,...
                     r*sin(theta)+y0,...
                     'LineWidth', -lineWidth(i),...
-                    'PickableParts','none', 'color', [neg_edge_color .5]);
+                    'PickableParts','none', 'color', [neg_edge_color edge_alpha]);
             end
         end
     end
@@ -235,15 +270,15 @@ if draw_node_top
         if weighted_node_size
             % scatter(cos(t(i)).*norm_factor3,sin(t(i)).*norm_factor3, 150*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled');
             if draw_node_edge
-                scatter(cos(t(i)), sin(t(i)), 150*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 3);
+                scatter(cos(t(i)), sin(t(i)), node_size*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 1);
             else
-                scatter(cos(t(i)), sin(t(i)), 150*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled');
+                scatter(cos(t(i)), sin(t(i)), node_size*abs(sumA(i))./norm_factor, gcols(group(i),:), 'filled');
             end
         else
             if draw_node_edge
-                scatter(cos(t(i)), sin(t(i)), 150, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 3);
+                scatter(cos(t(i)), sin(t(i)), node_size, gcols(group(i),:), 'filled', 'MarkerEdgeColor', gcols_edge(group(i),:), 'LineWidth', 1);
             else
-                scatter(cos(t(i)), sin(t(i)), 150, gcols(group(i),:), 'filled');
+                scatter(cos(t(i)), sin(t(i)), node_size, gcols(group(i),:), 'filled');
             end
         end
         
