@@ -106,8 +106,8 @@ view(90, 0);
 % disply overlay
 o2 = fmridisplay;
 
-xyz1 = [1;1];
-xyz2 = [-44;44];
+xyz1 = [-5;5];
+xyz2 = [-37;37];
 
 xyz1(:, 2:3) = 0;
 xyz2(:, 2:3) = 0;
@@ -116,6 +116,7 @@ o2 = montage(o2, 'saggital', 'wh_slice', xyz1, 'onerow', 'brighten', .5);
 o2 = montage(o2, 'saggital', 'wh_slice', xyz2, 'onerow', 'brighten', .5);
 o2 = montage(o2, 'axial', 'slice_range', axial_slice_range, 'onerow', 'spacing', spacing, 'brighten', .5);
 
+squeeze_axes_percent(o2.montage{1}.axis_handles, 40);
 squeeze_axes_percent(o2.montage{2}.axis_handles, 50);
 squeeze_axes_percent(o2.montage{3}.axis_handles, 20);
 
