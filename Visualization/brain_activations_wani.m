@@ -16,11 +16,17 @@ function [out, o2] = brain_activations_wani(r, varargin)
 % :Optional Inputs:
 %
 %   **inflated:**
+%        not recommended
 %        use inflated brain. We use the 32k inflated brain surface from HCP
 %        connectome workbench. (Q1-Q6_R440.R.inflated.32k_fs_LR.surf.gii and 
 %        Q1-Q6_R440.L.inflated.32k_fs_LR.surf.gii)
 %
 %   **very_inflated (default):**
+%        recommended
+%        use freesurfer inflated brain with Thomas Yeo group's RF_ANTs mapping
+%        from MNI to Freesurfer. (https://doi.org/10.1002/hbm.24213)
+%
+%   **very_inflated_workbench:**
 %        use very inflated brain. We also use the 32k inflated brain surface 
 %        from HCP connectome workbench. 
 %        (Q1-Q6_R440.R.very_inflated.32k_fs_LR.surf.gii and 
@@ -39,6 +45,7 @@ function [out, o2] = brain_activations_wani(r, varargin)
 
 use_inflated = false;
 use_veryinflated = true;
+use_veryinflated_wb = false;
 axial_slice_range = [-20 25];
 dooutline = false;
 spacing = 10;
@@ -50,9 +57,13 @@ for i = 1:length(varargin)
             % functional commands
             case {'inflated'}
                 use_inflated = true;
+                use_veryinflated = false;
             case {'very_inflated'}
                 % this is a default
                 % use_veryinflated = true;
+            case {'very_inflated_workbench'}
+                use_veryinflated_wb = true;
+                use_veryinflated = false;
             case {'axial_slice_range'}
                 axial_slice_range = varargin{i+1}{1};
                 if numel(varargin{i+1}) == 2
@@ -77,6 +88,9 @@ if ~do_color
         out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
         out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'),3, 'heatmap', 'colormaps', poscm, negcm);
     elseif use_veryinflated
+        out.h_surf_R = cluster_surf(r, 'fsavg_right', 2, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_R = cluster_surf(r, 'fsavg_left', 2, 'heatmap', 'colormaps', poscm, negcm);
+    elseif use_veryinflated_wb
         out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
         out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
     end
@@ -85,6 +99,9 @@ else
         out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), 3, {color});
         out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), 3, {color});
     elseif use_veryinflated
+        out.h_surf_R = cluster_surf(r, 'fsavg_right', 2, 'heatmap', {color});
+        out.h_surf_R = cluster_surf(r, 'fsavg_left', 2, 'heatmap', {color});
+    elseif use_veryinflated_wb
         out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), 3, {color});
         out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), 3, {color});
     end
@@ -92,7 +109,7 @@ end
 
 out.h = get(gca, 'children');
 set(out.h(2), 'BackFaceLighting', 'lit')
-
+% 
 camlight(-90,-20);
 
 axis vis3d;
