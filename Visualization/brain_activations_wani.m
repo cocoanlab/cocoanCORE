@@ -40,7 +40,15 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %        The default range is [-20 25] with the spacing of 10.
 %
 %   **outline:**
-%        draw outline, linewidth: 2
+%        draw outline, default linewidth: 2
+%
+%   **depth:**
+%        depth for surface map, (e.g., 'depth', 3)
+%        default is 2 mm
+%
+%   **color:**
+%        if you want to use one color for blobs, you can specify color
+%        using this option.
 
 
 use_inflated = false;
@@ -50,6 +58,7 @@ axial_slice_range = [-20 25];
 dooutline = false;
 spacing = 10;
 do_color = false;
+depth = 2;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -74,6 +83,9 @@ for i = 1:length(varargin)
             case {'color'}
                 do_color = true;
                 color = varargin{i+1};
+            case {'depth'}
+                depth = varargin{i+1};
+                    
         end
     end
 end
@@ -85,25 +97,25 @@ negcm = colormap_tor([.23 1 1], [0.11 0.46 1]);  % cools
 
 if ~do_color
     if use_inflated
-        out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
-        out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'),3, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
     elseif use_veryinflated
-        out.h_surf_R = cluster_surf(r, 'fsavg_right', 2, 'heatmap', 'colormaps', poscm, negcm);
-        out.h_surf_R = cluster_surf(r, 'fsavg_left', 2, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_R = cluster_surf(r, 'fsavg_right', depth, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_R = cluster_surf(r, 'fsavg_left', depth, 'heatmap', 'colormaps', poscm, negcm);
     elseif use_veryinflated_wb
-        out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
-        out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
+        out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
     end
 else
     if use_inflated
-        out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), 3, {color});
-        out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), 3, {color});
+        out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, {color});
+        out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, {color});
     elseif use_veryinflated
-        out.h_surf_R = cluster_surf(r, 'fsavg_right', 2, 'heatmap', {color});
-        out.h_surf_R = cluster_surf(r, 'fsavg_left', 2, 'heatmap', {color});
+        out.h_surf_R = cluster_surf(r, 'fsavg_right', depth, 'heatmap', {color});
+        out.h_surf_R = cluster_surf(r, 'fsavg_left', depth, 'heatmap', {color});
     elseif use_veryinflated_wb
-        out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), 3, {color});
-        out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), 3, {color});
+        out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, {color});
+        out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, {color});
     end
 end
 
