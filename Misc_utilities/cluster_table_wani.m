@@ -490,7 +490,7 @@ end
 %end
 
 % ========= Wani's additional setting
-atlas_basedir = '/Users/clinpsywoo/Documents/MATLAB/3aal_for_spm8';
+atlas_basedir = '/Users/clinpsywoo/Dropbox/MATLAB/3aal_for_spm8';
 % atlas_basedir = '/Volumes/RAID1/canlab/wani/Documents/MATLAB/3aal_for_spm8';
 atlas = fullfile(atlas_basedir, 'ROI_MNI_V4.nii');
 MNID = spm_vol(atlas);

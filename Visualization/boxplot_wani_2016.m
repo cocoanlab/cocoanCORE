@@ -93,6 +93,7 @@ dot_alpha = .4;
 bw = [];
 data_dotcolor = [];
 use_onedotcolor = false;
+do_compact = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -147,6 +148,9 @@ for i = 1:length(varargin)
             case {'data_dotcolor'}
                 data_dotcolor = varargin{i+1};
                 use_onedotcolor = true;
+            case {'compact'}
+                do_compact = true;
+                mdcol = 'none';
         end
     end
 end
@@ -154,7 +158,11 @@ end
 if ~usesamefig
     create_figure('box_plot');
 end
-boxplot(x); % using boxplot default
+if ~do_compact
+    boxplot(x); % using boxplot default
+else
+    boxplot(x, 'PlotStyle','compact'); % using boxplot default
+end
 
 % h = get(get(gca, 'children'), 'children');
 h = findobj(gca, 'Tag', 'Box');
@@ -177,7 +185,12 @@ for j = 1:2 % just twice
     end
     
     hold on;
-    boxplot(x); % because of the patch, do this again
+    if ~do_compact
+        boxplot(x); % using boxplot default
+    else
+        boxplot(x, 'PlotStyle','compact'); % using boxplot default
+    end
+
     set(gca, 'fontSize', font_size, 'lineWidth', line_axis, 'xlim', ...
         [0.2 coln+.8], 'XTickLabelMode', 'auto', 'XTickMode', 'auto');
     set(gcf, 'position', [50   159   105*coln   291]);

@@ -30,6 +30,7 @@ draw_node_edge = false;
 rotate_angle = 0;
 edge_alpha = 0.5;
 node_size = 150;
+draw_circle_width = 8;
 
 % default (no group)
 group = 1:size(A,1);
@@ -91,6 +92,8 @@ for i = 1:length(varargin)
                 if size(gcols_edge, 1) == 1
                     gcols_edge = repmat(gcols_edge, size(A,1),1);
                 end
+            case {'draw_circle_width'}
+                draw_circle_width = varargin;
         end
     end
 end
@@ -161,7 +164,7 @@ t = t - deg2rad(rotate_angle);
 
 if draw_circle
     tt = linspace(-pi, pi,1000)'; % theta for each node
-    plot(cos(tt), sin(tt), 'color', [.8 .8 .8], 'linewidth', 25);
+    plot(cos(tt), sin(tt), 'color', [.8 .8 .8], 'linewidth', draw_circle_width);
     hold on;
 end
 
