@@ -365,11 +365,11 @@ end
 
 function draw_surf(P)
 
-viewdeg = [135 30];
-mmdeep = 2;
-ovlc = '[0 1 1]';
-mycolors{1} = [1 1 1];
-xyz{1} = [];
+
+actcolor = [1 1 1];
+basecolor = [.5 .5 .5]
+mind = 2;
+ovlcolor = [0 1 1];
 
 load(P);
 
@@ -382,18 +382,16 @@ lightRestoreSingle(gca);
 %myLight = camlight(0,0);set(myLight,'Tag','myLight');
 %set(gcf, 'WindowButtonUpFcn', 'lightFollowView');lightFollowView
 
-view(viewdeg(1),viewdeg(2));
+view(135, 30);
 drawnow
 
-str = ['[c,alld] = getVertexColors(xyz{1},p,mycolors{1},[.5 .5 .5],' num2str(mmdeep) ',''ovlcolor'',' ovlc];
-str = [str ');'];
+[~, ~] = getVertexColors([], p, actcolor, basecolor, mind, 'ovlcolor', ovlcolor);
+
 
 % -------------------------------------------------------------------------
 % * run color change
 % -------------------------------------------------------------------------
 fprintf(' Running color change.\n');
-disp([' eval: ' str])
-eval(str);
 axis off;
 set(gcf, 'color', 'w');
 
