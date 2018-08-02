@@ -223,9 +223,11 @@ if do_highlight
 end
 
 % cerebellum
-if do_cerebellum, cluster_surf(region, which('surf_BrainMesh_Cerebellum_by_SLF.mat'), 2); end
+% if do_cerebellum, cluster_surf(region, which('surf_BrainMesh_Cerebellum_by_SLF.mat'), 2); end
+draw_surf(which('surf_BrainMesh_Cerebellum_by_SLF.mat'));
 % whole-brain 
-cluster_surf(region, cortex, 2);
+% cluster_surf(region, cortex, 2);
+draw_surf(cortex);
 
 % make glass brains
 h = get(gca, 'children');
@@ -359,4 +361,40 @@ if do_neg && ~isempty(neg_ab)
         
     end
 end
+end
+
+function draw_surf(P)
+
+viewdeg = [135 30];
+mmdeep = 2;
+ovlc = '[0 1 1]';
+mycolors{1} = [1 1 1];
+xyz{1} = [];
+
+load(P);
+
+%%figure
+p = patch('Faces',faces,'Vertices',vertices,'FaceColor',[.5 .5 .5], ...
+    'EdgeColor','none','SpecularStrength',.2,'FaceAlpha',1,'SpecularExponent',200);
+lighting gouraud; camlight right
+axis image;
+lightRestoreSingle(gca);
+%myLight = camlight(0,0);set(myLight,'Tag','myLight');
+%set(gcf, 'WindowButtonUpFcn', 'lightFollowView');lightFollowView
+
+view(viewdeg(1),viewdeg(2));
+drawnow
+
+str = ['[c,alld] = getVertexColors(xyz{1},p,mycolors{1},[.5 .5 .5],' num2str(mmdeep) ',''ovlcolor'',' ovlc];
+str = [str ');'];
+
+% -------------------------------------------------------------------------
+% * run color change
+% -------------------------------------------------------------------------
+fprintf(' Running color change.\n');
+disp([' eval: ' str])
+eval(str);
+axis off;
+set(gcf, 'color', 'w');
+
 end

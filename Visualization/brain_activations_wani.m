@@ -111,8 +111,8 @@ else
         out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, {color});
         out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, {color});
     elseif use_veryinflated
-        out.h_surf_R = cluster_surf(r, 'fsavg_right', depth, 'heatmap', {color});
-        out.h_surf_R = cluster_surf(r, 'fsavg_left', depth, 'heatmap', {color});
+        out.h_surf_R = cluster_surf(r, 'fsavg_right', depth, {color});
+        out.h_surf_R = cluster_surf(r, 'fsavg_left', depth, {color});
     elseif use_veryinflated_wb
         out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, {color});
         out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, {color});
