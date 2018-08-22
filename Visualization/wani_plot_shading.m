@@ -4,13 +4,15 @@ function [h_line, h_patch] = wani_plot_shading(xaxis, mean, error, varargin)
 %
 % input: xaxis, mean, error
 %
-% optional_inputs: 'color', 'color_shade', 'alpha'
+% optional_inputs: 'color', 'color_shade', 'alpha', 'linewidth'
 
 color = [0.3333, 0.6588, 1.0000]; % default color
 
 use_color_shade = false;
 do_alpha = false;
 alpha = 1;
+linew = 2;
+
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
@@ -22,6 +24,8 @@ for i = 1:length(varargin)
             case {'alpha'} 
                 do_alpha = true;
                 alpha = varargin{i+1}; % degree-corrected SBM
+            case {'linewidth'}
+                linew = varargin{i+1};
         end
     end
 end
@@ -43,6 +47,6 @@ h_patch = patch(xdata,ydata,'y','linestyle', 'none', 'FaceColor', color2, 'faceA
 hold on;
 
 % h_line = plot(xaxis, mean, 'o-', 'linewidth', 2, 'color', color, 'MarkerSize', 7, 'MarkerFaceColor', color);
-h_line = plot(xaxis, mean, '-', 'linewidth', 2, 'color', color);
+h_line = plot(xaxis, mean, '-', 'linewidth', linew, 'color', color);
 
 end

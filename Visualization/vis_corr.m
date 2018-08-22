@@ -79,6 +79,10 @@ sig_col = [0.7529 0 0;0 0.4392 0.7529];
 r_descript = 'input r';
 triangle_col = 'k';
 
+tickwidth = 2;
+ticklength = 5;
+tickoffset = 1;
+
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
@@ -118,6 +122,14 @@ for i = 1:length(varargin)
             case {'group_color'}
                 display_group_color = 1; 
                 group_color = varargin{i+1};
+            case {'group_tick'}
+                dogrouptick = 1;
+            case {'group_tickwidth'}
+                tickwidth = varargin{i+1};
+            case {'group_ticklength'}
+                ticklength = varargin{i+1};
+            case {'group_tickoffset'}
+                tickoffset = varargin{i+1};
             case {'smooth'}
                 dosmooth = 1; % 2d gaussian smoothing (imgaussfilt) with sigma = 1
             case {'triangle'}
@@ -160,7 +172,11 @@ if display_group_mean || display_group_sum
             if i == j
                 non_zero_n = size(conn_mat,1).*(size(conn_mat,1)-1)./2;
                 if display_group_mean
-                    net_mat(i,j) = sum(sum(triu(conn_mat,1)))./non_zero_n;
+                    if non_zero_n ~= 0
+                        net_mat(i,j) = sum(sum(triu(conn_mat,1)))./non_zero_n;
+                    else
+                        net_mat(i,j) = 0;
+                    end
                 elseif display_group_sum
                     net_mat(i,j) = sum(sum(triu(conn_mat,1)));
                 end
@@ -264,6 +280,25 @@ if do_display
         end
     end
     
+    if dogrouptick
+        n_c = histc(sorted_group, unique(sorted_group));
+        set(gca, 'Clipping', 'off');
+        for i = 1:(numel(n_c)-1)
+            
+            ytick_x1 = [0 -ticklength] - tickoffset;
+            ytick_x2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset;
+            ytick_y = [sum(n_c(1:i)) sum(n_c(1:i))] + 0.5;
+            line(ytick_x1, ytick_y, 'color', glcolor, 'linewidth', tickwidth);
+            line(ytick_x2, ytick_y, 'color', glcolor, 'linewidth', tickwidth);
+            xtick_x = [sum(n_c(1:i)) sum(n_c(1:i))] + 0.5;
+            xtick_y1 = [0 -ticklength] - tickoffset;
+            xtick_y2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset;
+            line(xtick_x, xtick_y1, 'color', glcolor, 'linewidth', tickwidth);
+            line(xtick_x, xtick_y2, 'color', glcolor, 'linewidth', tickwidth);
+            
+        end
+    end
+    
     if dogroupline
         n_c = histc(sorted_group, unique(sorted_group));
         n_c = [0; n_c];
@@ -278,7 +313,6 @@ if do_display
             line([xy1(1) xy2(1)], [xy2(2) xy2(2)], 'color', glcolor, 'linewidth', glwidth);
             
         end
-        
     end
     
     if display_group_color
@@ -293,7 +327,7 @@ if do_display
     
     if do_triangle
         patch([-1, size(r,1)+2, size(r,1)+2], [-1, -1, size(r,1)+2], 'w', 'edgecolor', 'w');
-        patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', 5);
+        patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', 2);
     end
     
     out.h = h;
