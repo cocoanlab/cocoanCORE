@@ -79,6 +79,7 @@ sig_col = [0.7529 0 0;0 0.4392 0.7529];
 r_descript = 'input r';
 triangle_col = 'k';
 
+dogrouptick = 0;
 tickwidth = 2;
 ticklength = 5;
 tickoffset = 1;
