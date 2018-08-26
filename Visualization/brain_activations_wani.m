@@ -65,20 +65,27 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %        this option. If you don't want to draw this, just leave it blank.
 %        e.g., 'x2', [-41 41] or 'x2', []  (default: [-37 37]);
 %
+%   **y:**
+%        you can specify the coronal slice numbers using this option. 
+%        e.g., 'y', [-10 10] (default: []);
+%
 %   **z:**
 %        you can specify the axial slice numbers
 %        e.g., 'z', [-25 -15 -6 13 22]    
 %        (default: slice range between z = -20 and 25 with spacing 10 mm)
 %
 %   **squeeze_x1:**
-%        you can specify squeeze percentage using this. default: 40
+%        you can specify squeeze percentage for x1 using this. default: 40
 %        e.g., 'squeeze_x1', 0 or 'squeeze_x1', 30
 %
 %   **squeeze_x2:**
-%        you can specify squeeze percentage using this. default: 50
+%        you can specify squeeze percentage for x2 using this. default: 50
+%
+%   **squeeze_y:**
+%        you can specify squeeze percentage for y using this. default: 30
 %
 %   **squeeze_z:**
-%        you can specify squeeze percentage using this. default: 20
+%        you can specify squeeze percentage for z using this. default: 20
 %
 %   **pruned:**
 %        if you have pruned version of map, you can use this option. 
@@ -192,6 +199,7 @@ do_slice_range = true;
 do_color = false;
 x1 = [-5 5]';
 x2 = [-37 37]';
+y = [];
 
 do_pruned = false;
 reuse_o2 = false;
@@ -199,6 +207,7 @@ do_cmaprange = false;
 
 squeeze_x1 = 40;
 squeeze_x2 = 50;
+squeeze_y = 30;
 squeeze_z = 20;
 
 % parsing varargin
@@ -223,6 +232,9 @@ for i = 1:length(vars)
             case {'x2'}
                 x2 = vars{i+1};
                 if size(x2,1) == 1, x2 = x2'; end
+            case {'y'}
+                y = vars{i+1};
+                if size(y,1) == 1, y = y'; end
             case {'z'}
                 do_slice_range = false;
                 z = vars{i+1};
@@ -231,6 +243,8 @@ for i = 1:length(vars)
                 squeeze_x1 = varargin{i+1};
             case {'squeeze_x2'}
                 squeeze_x2 = varargin{i+1};
+            case {'squeeze_y'}
+                squeeze_y = varargin{i+1};
             case {'squeeze_z'}
                 squeeze_z = varargin{i+1};
             case {'pruned'}
@@ -252,9 +266,13 @@ if ~reuse_o2
     o2 = fmridisplay;
     xyz1 = x1;
     xyz2 = x2;
+    xyz3 = y;
     
     xyz1(:, 2:3) = 0;
     xyz2(:, 2:3) = 0;
+    
+    xyz3(:, 2:3) = 0;
+    xyz3 = xyz3(:,[2 1 3]);
     
     o2 = montage(o2, 'saggital', 'wh_slice', xyz1, 'onerow', 'brighten', .5);
     
@@ -262,19 +280,35 @@ if ~reuse_o2
         o2 = montage(o2, 'saggital', 'wh_slice', xyz2, 'onerow', 'brighten', .5);
     end
     
+    if ~isempty(y)
+        o2 = montage(o2, 'coronal', 'wh_slice', xyz3, 'onerow', 'brighten', .5);
+    end
+    
     if do_slice_range
         o2 = montage(o2, 'axial', 'slice_range', axial_slice_range, 'onerow', 'spacing', spacing, 'brighten', .5);
     else
-        xyz3 = z;
-        xyz3(:, 2:3) = 0;
-        xyz3 = xyz3(:,[2 3 1]);
+        xyz4 = z;
+        xyz4(:, 2:3) = 0;
+        xyz4 = xyz4(:,[2 3 1]);
         
-        o2 = montage(o2, 'axial', 'wh_slice', xyz3, 'onerow', 'brighten', .5);
+        o2 = montage(o2, 'axial', 'wh_slice', xyz4, 'onerow', 'brighten', .5);
     end
     
-    squeeze_axes_percent(o2.montage{1}.axis_handles, squeeze_x1); 
-    squeeze_axes_percent(o2.montage{2}.axis_handles, squeeze_x2); 
-    squeeze_axes_percent(o2.montage{3}.axis_handles, squeeze_z); 
+    k = 1;
+    squeeze_axes_percent(o2.montage{k}.axis_handles, squeeze_x1); 
+    
+    if ~isempty(x2)
+        k = k + 1;
+        squeeze_axes_percent(o2.montage{k}.axis_handles, squeeze_x2); 
+    end
+    
+    if ~isempty(y)
+        k = k + 1;
+        squeeze_axes_percent(o2.montage{k}.axis_handles, squeeze_y); 
+    end
+    
+    k = k + 1;
+    squeeze_axes_percent(o2.montage{k}.axis_handles, squeeze_z); 
     
 end
 

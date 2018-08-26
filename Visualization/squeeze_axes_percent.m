@@ -19,7 +19,11 @@ function squeeze_axes_percent(h, squeezepercent)
 
 % (xperc yperc xextent yextent)
 pos = get(h, 'Position');
-pos = cat(1, pos{:});
+try
+    pos = cat(1, pos{:});
+catch
+    % do nothing
+end
 
 spacing = diff(pos(:, 1)); % x-position spacing (usually all the same)
 
