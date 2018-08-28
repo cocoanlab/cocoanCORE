@@ -22,7 +22,7 @@ for i = 1:length(varargin)
                 dodegree = 1;
             case {'group'}
                 dogroup = 1;
-                grouping = varargin{i+1};   
+                grouping = varargin{i+1};
             case {'groupcolor'}
                 g_cols = varargin{i+1};
             case {'highlight'}
@@ -31,34 +31,36 @@ for i = 1:length(varargin)
     end
 end
 
-A(isnan(W)) = 0;
-A = sparse(W);
+W(isnan(W)) = 0;
+[i,j] = find(W);
 
-% A(isnan(A)) = 0;
-% A = sparse(A);
-X = fruchterman_reingold_force_directed_layout(A);
+G = graph(i,j);
+h = figure;
+h_graph = plot(G,'Layout','force');
+X = [h_graph.XData',h_graph.YData'];
+close(h);
 
 if do3d
     for i = 1:numel(cl), xyz(i,:) = cl(i).mm_center; end
 end
 
-[i,j] = find(W < 0);
+[neg_i,neg_j] = find(W < 0);
 
-for k = 1:numel(i)
-    hl(k) = line([X(i(k),1) X(j(k),1)], [X(i(k),2) X(j(k),2)]);
-    set(hl(k), 'color', [0    0.2333    0.8627], 'linewidth', 1);
+for k = 1:numel(neg_i)
+    h.edge_neg(k) = line([X(neg_i(k),1) X(neg_j(k),1)], [X(neg_i(k),2) X(neg_j(k),2)]);
+    set(h.edge_neg(k), 'color', [0.1686    0.5137    0.7294], 'linewidth', 1);
     hold on;
 end
 
-[i,j] = find(W > 0);
+[pos_i,pos_j] = find(W > 0);
 
-for k = 1:numel(i)
-    hl(k) = line([X(i(k),1) X(j(k),1)], [X(i(k),2) X(j(k),2)]);
-    set(hl(k), 'color', [0.8608    0.2020         0], 'linewidth', 1);
+for k = 1:numel(pos_i)
+    h.edge_pos(k) = line([X(pos_i(k),1) X(pos_j(k),1)], [X(pos_i(k),2) X(pos_j(k),2)]);
+    set(h.edge_pos(k), 'color', [0.8431    0.0980    0.1098], 'linewidth', 1);
     hold on;
 end
 
-h(i) = scatter(X(:,1), X(:,2), 200, 'filled', 'MarkerFaceColor', [1 0 0], 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
+h.node = scatter(X(:,1), X(:,2), 200, 'filled', 'MarkerFaceColor', [1 0 0], 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
 
 axis off;
 set(gcf, 'position', [360   235   570   463], 'color', 'w');
