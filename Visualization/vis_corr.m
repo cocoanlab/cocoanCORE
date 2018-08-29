@@ -78,6 +78,7 @@ sig_col = [0.7529 0 0;0 0.4392 0.7529];
 
 r_descript = 'input r';
 triangle_col = 'k';
+triangle_width = 2;
 
 dogrouptick = 0;
 tickwidth = 2;
@@ -137,6 +138,8 @@ for i = 1:length(varargin)
                 do_triangle = 1;
             case {'triangle_color'}
                 triangle_col = varargin{i+1};
+            case {'triangle_width'}
+                triangle_width = varargin{i+1};
             case {'sig'}
                 do_sig = true;
                 sig_matrix = varargin{i+1};
@@ -328,7 +331,7 @@ if do_display
     
     if do_triangle
         patch([-1, size(r,1)+2, size(r,1)+2], [-1, -1, size(r,1)+2], 'w', 'edgecolor', 'w');
-        patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', 2);
+        patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', triangle_width);
     end
     
     out.h = h;
