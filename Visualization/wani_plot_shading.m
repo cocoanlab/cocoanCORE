@@ -6,7 +6,7 @@ function [h_line, h_patch] = wani_plot_shading(xaxis, mean, error, varargin)
 %
 % optional_inputs: 'color', 'color_shade', 'alpha', 'linewidth'
 
-color = [0.3333, 0.6588, 1.0000]; % default color
+color = [0.3333, 0.6588, 1.0000]; % default color  
 
 use_color_shade = false;
 do_alpha = false;
