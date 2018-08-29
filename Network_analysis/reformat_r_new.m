@@ -47,6 +47,14 @@ function r = reformat_r_new(r, varargin)
 %   **'one_diag' or 'ones_diag':**
 %        This option make diagonals ones
 %
+%   **'upper_triangle':**
+%        This option keep upper triangle and make lower triangle and
+%        diagonals into zeros.
+%
+%   **'lower_triangle':**
+%        This option keep lower triangle and make upper triangle and
+%        diagonals into zeros.
+%
 %   **'symmetric_avg':**
 %        This option does (r + r')/2
 %
@@ -80,11 +88,16 @@ function r = reformat_r_new(r, varargin)
 %    Programmers' notes:
 %    Created 8/28/18 by wani woo
 %
+%    8/29/18 : J.J. - add 'upper_triangle' and 'lower_triangle' option
+%    (used for 'vis_network' function, because the input should not be
+%    duplicate matrix)
 % ..
 
 do_flatten = false;
 do_reconstruct = false;
 do_remove_diag = false;
+do_upper_triangle = false;
+do_lower_triangle = false;
 do_symmetric_avg = false;
 do_symmetric_sum = false;
 do_fisherz = false;
@@ -111,6 +124,10 @@ for i = 1:length(varargin)
                 do_reconstruct = true;
             case {'remove_diag'}
                 do_remove_diag = true;
+            case {'upper_triangle'}
+                do_upper_triangle = true;
+            case {'lower_triangle'}
+                do_lower_triangle = true;
             case {'symmetric_avg'}
                 do_symmetric_avg = true;
             case {'symmetric_sum'}
@@ -135,6 +152,10 @@ if do_reconstruct
 end
     
 if do_remove_diag, r(logical(eye(n))) = 0; end
+
+if do_upper_triangle, r = r .* triu(true(n,n),1); end
+    
+if do_lower_triangle, r = r .* tril(true(n,n),-1); end
 
 if do_symmetric_avg, r = (r + r')./2; end
 

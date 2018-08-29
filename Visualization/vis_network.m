@@ -89,6 +89,9 @@ function h = vis_network(W, varargin)
 % ..
 %    Programmers' notes:
 %    Created 8/28/18 by wani woo
+%
+%    8/29/18 : J.J. - change to use only upper triangle because the input
+%    should not be duplicate matrix.
 % ..
 %
 
@@ -129,6 +132,8 @@ for i = 1:length(varargin)
 end
 
 W(isnan(W)) = 0;
+% if issymmetric(W); W = reformat_r_new(W, 'upper_triangle'); end
+
 [i, j, s] = find(W);
 
 new_s = (abs(s) - min(abs(s)))./(max(abs(s))-min(abs(s))); % 0-1 normalization
@@ -168,6 +173,7 @@ for k = 1:numel(pos_i)
     hold on;
 end
 
+W = reformat_r_new(W, 'symmetric_sum');
 if dodegree
     d = sum(W~=0);
     d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
