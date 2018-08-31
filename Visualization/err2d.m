@@ -64,7 +64,7 @@ reflinew = 1;
 eb_width = 1.5;
 m_size = 60;
 
-colors = [0.8353    0.2431    0.3098];
+colors = repmat([0.8353    0.2431    0.3098], numel(x), 1);
 colors_ref = [0.9569    0.4275    0.2627];
 
 for i = 1:length(varargin)
@@ -121,9 +121,9 @@ ymax2 = max(y+ye) + range(y)*.1;
 
 for i = 1:numel(x)
     h{4}{i} = ploterr(x(i),y(i),xe(i),ye(i));
-    set(h{4}{i}(1), 'marker', '.', 'color', colors, 'markersize', 1);
-    set(h{4}{i}(2), 'color', colors, 'linewidth', eb_width);
-    set(h{4}{i}(3), 'color', colors, 'linewidth', eb_width);
+    set(h{4}{i}(1), 'marker', '.', 'color', colors(i,:), 'markersize', 1);
+    set(h{4}{i}(2), 'color', colors(i,:), 'linewidth', eb_width);
+    set(h{4}{i}(3), 'color', colors(i,:), 'linewidth', eb_width);
     xdata = get(h{4}{i}(2), 'xData');
     xdata(4:5) = xdata(1:2); xdata(7:8) = xdata(1:2);
     set(h{4}{i}(2), 'xdata', xdata);
