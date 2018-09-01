@@ -51,7 +51,36 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %        draw outline, default linewidth: 2
 %
 %   **surface_only:**
-%        you can use this option to draw only surface
+%        you can use this option to draw only surface. As a default, it
+%        will show only lateral view. 
+%
+%   **surface_all:**
+%        You can use this option to draw lateral and also medial view of
+%        surface maps. 
+% 
+%   **all:**
+%        This will put 2 surface and 12 montage maps (4 sagittal and 8 axial) 
+%        in one row. This will be good when you want to explore the 
+%        activation maps. 
+%
+%   **all2:**
+%        This will show 2 surface and 10 montage maps (4 sagittal and 6 axial) 
+%        in one row. This will be good when you want to use the figure for 
+%        publicaition. 
+%
+%   **all_xyz**
+%        You can also specify x and z for sagittal and axial slices for "all" 
+%        option using this options. 
+%        E.g., 'all_xyz', [-5 2 -35 35 -30:12:60]
+%              first four will be used as x''s and the eight numbers after 
+%              that will be used as z. More than 12 numbers will be ignored.
+%
+%   **all2_xyz**
+%        You can also specify x and z for sagittal and axial slices for "all2" 
+%        option using this options. 
+%        E.g., 'all_xyz', [-5 2 -35 35 -30:12:60]
+%              first four will be used as x''s and the six numbers after 
+%              that will be used as z. More than 10 numbers will be ignored.
 %
 %   **montage_only:**
 %        you can use this option to draw only montage
