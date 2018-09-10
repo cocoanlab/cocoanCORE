@@ -81,6 +81,8 @@ triangle_col = 'k';
 triangle_width = 2;
 
 dogrouptick = 0;
+tickstyle = 'edge';
+tickcolor = 'k';
 tickwidth = 2;
 ticklength = 5;
 tickoffset = 1;
@@ -126,6 +128,8 @@ for i = 1:length(varargin)
                 group_color = varargin{i+1};
             case {'group_tick'}
                 dogrouptick = 1;
+            case {'group_tickstyle'}
+                tickstyle = varargin{i+1};
             case {'group_tickwidth'}
                 tickwidth = varargin{i+1};
             case {'group_ticklength'}
@@ -286,19 +290,30 @@ if do_display
     
     if dogrouptick
         n_c = histc(sorted_group, unique(sorted_group));
+        if display_group_mean || display_group_sum
+            n_c= ones(size(n_c));
+        end
+        if strcmp(tickstyle, 'center')
+            tickcentering = -0.5;
+        elseif strcmp(tickstyle, 'edge')
+            tickcentering = 0;
+        end
         set(gca, 'Clipping', 'off');
-        for i = 1:(numel(n_c)-1)
-            
-            ytick_x1 = [0 -ticklength] - tickoffset;
-            ytick_x2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset;
-            ytick_y = [sum(n_c(1:i)) sum(n_c(1:i))] + 0.5;
-            line(ytick_x1, ytick_y, 'color', glcolor, 'linewidth', tickwidth);
-            line(ytick_x2, ytick_y, 'color', glcolor, 'linewidth', tickwidth);
-            xtick_x = [sum(n_c(1:i)) sum(n_c(1:i))] + 0.5;
-            xtick_y1 = [0 -ticklength] - tickoffset;
-            xtick_y2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset;
-            line(xtick_x, xtick_y1, 'color', glcolor, 'linewidth', tickwidth);
-            line(xtick_x, xtick_y2, 'color', glcolor, 'linewidth', tickwidth);
+        
+        for i = 1:numel(n_c)
+            if i == numel(n_c) && strcmp(tickstyle, 'edge')
+                break;
+            end
+            ytick_x1 = [0 -ticklength] - tickoffset + 0.5;
+            ytick_x2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset + 0.5;
+            ytick_y = [sum(n_c(1:i)) sum(n_c(1:i))] + tickcentering + 0.5;
+            line(ytick_x1, ytick_y, 'color', tickcolor, 'linewidth', tickwidth);
+            line(ytick_x2, ytick_y, 'color', tickcolor, 'linewidth', tickwidth);
+            xtick_x = ytick_y;
+            xtick_y1 = ytick_x1;
+            xtick_y2 = ytick_x2;
+            line(xtick_x, xtick_y1, 'color', tickcolor, 'linewidth', tickwidth);
+            line(xtick_x, xtick_y2, 'color', tickcolor, 'linewidth', tickwidth);
             
         end
     end
