@@ -207,7 +207,7 @@ lineWidth = w./norm_factor;
 if sum(lineWidth) == numel(lineWidth) % all lines are the same width.
     lineWidth = repmat(minLineWidth,numel(lineWidth),1);
 else % lines of variable width.
-    lineWidth = lineWidthCoef*lineWidth + minLineWidth; % plus and minus
+    lineWidth = lineWidthCoef*lineWidth; % plus and minus
 end
 
 for i = 1:length(w)
@@ -216,7 +216,6 @@ for i = 1:length(w)
             % points are diametric, so draw a straight line
             u = [cos(t(row(i)));sin(t(row(i)))];
             v = [cos(t(col(i)));sin(t(col(i)))];
-            %this.Node(row(i)).Connection(end+1) =
             if lineWidth(i) > 0
                 line(...
                     [u(1);v(1)],...

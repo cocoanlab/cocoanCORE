@@ -33,8 +33,8 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %         Q1-Q6_R440.L.very_inflated.32k_fs_LR.surf.gii)
 %   
 %   **depth:**
-%        depth for surface map, (e.g., 'depth', 3)
-%        default is 2 mm
+%        depth for surface map, (e.g., 'depth', 4)
+%        default is 3 mm
 %
 %   **color:**
 %        if you want to use one color for blobs, you can specify color
@@ -134,7 +134,7 @@ global surface_style color depth poscm negcm do_color do_all all_style
 
 surface_style = 'veryinflated';
 do_color = false;
-depth = 2;
+depth = 3;
 do_all = false;
 do_montage = true;
 do_surface = true;
@@ -500,7 +500,7 @@ else
             
             xyz = [-2 2 -37 37 ... % sagittal
                 -20 -10 0 10 20 30 40 50]; % axial
-            if any(strcmp(vars, 'all_xyz')), xyz = vars(find(strcmp(vars, 'all_xyz'))+1); end
+            if any(strcmp(vars, 'all_xyz')), xyz = vars{find(strcmp(vars, 'all_xyz'))+1}; end
             
             texts{1} = [38 -50;10 -50;35, -60;15, -60;-30, -115;-15, -115;-5, -115;-10, -115;-10, -115;-10, -115;-10, -115;-10, -115];
             for i = 1:numel(xyz)
@@ -540,7 +540,7 @@ else
             xyz = [-2 2 -37 37 ... % sagittal
                 -20 -10 0 10 20 30]; % axial
             
-            if any(strcmp(vars, 'all2_xyz')), xyz = vars(find(strcmp(vars, 'all2_xyz'))+1); end
+            if any(strcmp(vars, 'all2_xyz')), xyz = vars{find(strcmp(vars, 'all2_xyz'))+1}; end
             
             texts{1} = [35 -50;25, -50;35, -60;15, -60;-25, -115;-15, -115;-2, -115;-7, -115;-7, -115;-7, -115];
             for i = 1:numel(xyz)
