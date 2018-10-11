@@ -1,4 +1,4 @@
-function boxplot_wani_2016(x, varargin)
+function [handles, dot_locs] = boxplot_wani_2016(x, varargin)
 
 % Draw a box plot with some additional useful features. (work in the
 % matlab version since 2016 maybe 2015 as well, but not tested). 
@@ -177,6 +177,8 @@ for i = 1:length(h)
     end
 end
 
+handles.boxplot = h;
+
 clf;
 
 for j = 1:2 % just twice
@@ -227,6 +229,7 @@ for j = 1:2 % just twice
     end
 end
 
+handles.boxplot_others = h;
 
 if doviolin
     x_cell = enforce_cell_array(x);
@@ -234,27 +237,35 @@ if doviolin
     if ~isempty(bw)
 %         violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
 %             'x', 1:numel(x_cell), 'mc', [0.3686    0.3098    0.6353], 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5, 'bw', bw);
-        violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
+        h = violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
             'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5, 'bw', bw);
     else
 %         violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
 %             'x', 1:numel(x_cell), 'mc', [0.3686    0.3098    0.6353], 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5);
-        violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
+        h = violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
             'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5);
     end
     legend off
+    
+    handles.violin = h;
 end
 
+
+
+x_cell = enforce_cell_array(x);
+xvalues = get_violin_points(1:numel(x), x);
+
+dot_locs.x = xvalues;
+dot_locs.y = x_cell;
+
 if dodots
-    x_cell = enforce_cell_array(x);
-    xvalues = get_violin_points(1:numel(x), x);
-    
     for i = 1:numel(xvalues)
         if ~use_onedotcolor
             data_dotcolor = colud3(i,:);
         end
-        scatter(xvalues{i}, x_cell{i}, dot_size, data_dotcolor, 'filled', 'MarkerFaceAlpha', dot_alpha);
+        h = scatter(xvalues{i}, x_cell{i}, dot_size, data_dotcolor, 'filled', 'MarkerFaceAlpha', dot_alpha);
     end
+    handles.dots = h;
 end
 
 hh = findobj('Tag', 'Median');
@@ -262,6 +273,8 @@ hh = findobj('Tag', 'Median');
 for i = 1:numel(hh)
     set(hh(i), 'color', mdcol, 'linewidth', line_md, 'linestyle', '-');
 end
+
+handles.median = hh;
 
 set(gca, 'xtick', find(sum(isnan(x))~=size(x,1)), 'xticklabel', ' ',...
     'box', 'off',  'TickLength', [.015 .015], 'TickDir', 'out');
