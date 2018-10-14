@@ -94,6 +94,7 @@ bw = [];
 data_dotcolor = [];
 use_onedotcolor = false;
 do_compact = false;
+do_box = true;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -151,6 +152,8 @@ for i = 1:length(varargin)
             case {'compact'}
                 do_compact = true;
                 mdcol = 'none';
+            case {'nobox'}
+                do_box = false;
         end
     end
 end
@@ -158,78 +161,81 @@ end
 if ~usesamefig
     create_figure('box_plot');
 end
-if ~do_compact
-    boxplot(x); % using boxplot default
-else
-    boxplot(x, 'PlotStyle','compact'); % using boxplot default
-end
 
-% h = get(get(gca, 'children'), 'children');
-h = findobj(gca, 'Tag', 'Box');
-
-k=0;
-% if iscell(h), h = h{1}; end
-for i = 1:length(h) 
-    if isequal(get(h(i), 'color'), [0 0 1])
-        k = k+1;
-        patchdata.x{k} = get(h(i), 'xdata');
-        patchdata.y{k} = get(h(i), 'ydata');
-    end
-end
-
-handles.boxplot = h;
-
-clf;
-
-for j = 1:2 % just twice
-    for i = 1:numel(patchdata.x)
-        patch(patchdata.x{i}, patchdata.y{i}, colud2(i,:), 'EdgeColor', colud2(i,:), 'FaceAlpha', facealpha);
-    end
-    
-    hold on;
+if do_box
     if ~do_compact
         boxplot(x); % using boxplot default
     else
         boxplot(x, 'PlotStyle','compact'); % using boxplot default
     end
-
-    set(gca, 'fontSize', font_size, 'lineWidth', line_axis, 'xlim', ...
-        [0.2 coln+.8], 'XTickLabelMode', 'auto', 'XTickMode', 'auto');
-    set(gcf, 'position', [50   159   105*coln   291]);
-    h = findobj(gca, 'Type', 'Line');
-    %h = h{1};
+    
+    % h = get(get(gca, 'children'), 'children');
+    h = findobj(gca, 'Tag', 'Box');
+    
     k=0;
-    for i = 1:length(h) 
-        set(h(i), 'lineWidth', line_etc)
-        if strcmp(h(i).Tag, 'Box')
+    % if iscell(h), h = h{1}; end
+    for i = 1:length(h)
+        if isequal(get(h(i), 'color'), [0 0 1])
             k = k+1;
-            if numel(boxlinestyle) == 1
-                set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{1});
-            else
-                set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{k});
-            end
+            patchdata.x{k} = get(h(i), 'xdata');
+            patchdata.y{k} = get(h(i), 'ydata');
         end
     end
     
-    for i = 1:length(h) %(3*coln)
-        % set(h(i), 'lineWidth', line_etc)
+    handles.boxplot = h;
+    
+    clf;
+    
+    for j = 1:2 % just twice
+        for i = 1:numel(patchdata.x)
+            patch(patchdata.x{i}, patchdata.y{i}, colud2(i,:), 'EdgeColor', colud2(i,:), 'FaceAlpha', facealpha);
+        end
         
-        if strcmp(h(i).Tag, 'Outliers')
-            set(h(i), 'marker', '.', 'markerSize', dotsize, 'MarkerEdgeColor', dotcolor)
+        hold on;
+        if ~do_compact
+            boxplot(x); % using boxplot default
+        else
+            boxplot(x, 'PlotStyle','compact'); % using boxplot default
         end
-    end
-    
-    if j == 1
-        if dorefline
-            for ii = 1:numel(ref)
-                l = refline([0 ref(ii)]);
-                set(l, 'color', reflinecol, 'linestyle', reflinestyle, 'linewidth', line_ref);
+        
+        set(gca, 'fontSize', font_size, 'lineWidth', line_axis, 'xlim', ...
+            [0.2 coln+.8], 'XTickLabelMode', 'auto', 'XTickMode', 'auto');
+        set(gcf, 'position', [50   159   105*coln   291]);
+        h = findobj(gca, 'Type', 'Line');
+        %h = h{1};
+        k=0;
+        for i = 1:length(h)
+            set(h(i), 'lineWidth', line_etc)
+            if strcmp(h(i).Tag, 'Box')
+                k = k+1;
+                if numel(boxlinestyle) == 1
+                    set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{1});
+                else
+                    set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{k});
+                end
+            end
+        end
+        
+        for i = 1:length(h) %(3*coln)
+            % set(h(i), 'lineWidth', line_etc)
+            
+            if strcmp(h(i).Tag, 'Outliers')
+                set(h(i), 'marker', '.', 'markerSize', dotsize, 'MarkerEdgeColor', dotcolor)
+            end
+        end
+        
+        if j == 1
+            if dorefline
+                for ii = 1:numel(ref)
+                    l = refline([0 ref(ii)]);
+                    set(l, 'color', reflinecol, 'linestyle', reflinestyle, 'linewidth', line_ref);
+                end
             end
         end
     end
+    
+    handles.boxplot_others = h;
 end
-
-handles.boxplot_others = h;
 
 if doviolin
     x_cell = enforce_cell_array(x);
@@ -249,8 +255,6 @@ if doviolin
     
     handles.violin = h;
 end
-
-
 
 x_cell = enforce_cell_array(x);
 xvalues = get_violin_points(1:numel(x), x);
