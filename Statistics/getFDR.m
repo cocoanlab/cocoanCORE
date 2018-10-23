@@ -7,7 +7,7 @@ function [pFDR] = getFDR(p,q)
 
 pFDR = 1;
 V = length(p);
-P=sort(p);
+P = sort(p);
 for i=1:V
     if P(i) <= i*q/V
     else

@@ -106,6 +106,8 @@ do_manual_node_size = 0;
 g_cols = {};
 wh_hl = true(size(W,1),1);
 noline = 0;
+ln_pos_color = [0.8431    0.0980    0.1098];
+ln_neg_color = [0.1686    0.5137    0.7294];
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -134,6 +136,10 @@ for i = 1:length(varargin)
                 node_size = varargin{i+1};
             case {'noline'}
                 noline = 1;
+            case {'line_pos_color'}
+                ln_pos_color = varargin{i+1};
+            case {'line_neg_color'}
+                ln_neg_color = varargin{i+1};
         end
     end
 end
@@ -158,15 +164,16 @@ if do3d
     for i = 1:numel(cl), xyz(i,:) = cl(i).mm_center; end
 end
 
-[neg_i,neg_j] = find(W < 0);
-
 if ~noline
+
+    [neg_i,neg_j] = find(W < 0);
+    
     for k = 1:numel(neg_i)
         h.edge_neg(k) = line([X(neg_i(k),1) X(neg_j(k),1)], [X(neg_i(k),2) X(neg_j(k),2)]);
         if doweight
-            set(h.edge_neg(k), 'color', [0.1686    0.5137    0.7294], 'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
+            set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
         else
-            set(h.edge_neg(k), 'color', [0.1686    0.5137    0.7294], 'linewidth', 1.5);
+            set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', 1.5);
         end
         hold on;
     end
@@ -176,9 +183,9 @@ if ~noline
     for k = 1:numel(pos_i)
         h.edge_pos(k) = line([X(pos_i(k),1) X(pos_j(k),1)], [X(pos_i(k),2) X(pos_j(k),2)]);
         if doweight
-            set(h.edge_pos(k), 'color', [0.8431    0.0980    0.1098], 'linewidth', new_s(sum([i==pos_i(k) j==pos_j(k)],2)==2));
+            set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', new_s(sum([i==pos_i(k) j==pos_j(k)],2)==2));
         else
-            set(h.edge_pos(k), 'color', [0.8431    0.0980    0.1098], 'linewidth', 1);
+            set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', 1);
         end
         hold on;
     end
@@ -195,13 +202,11 @@ elseif do_absw_degree
     if all(d==d(1)), d = repmat(150, size(d));
     else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
     end
-    d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
 elseif do_w_degree
     d = sum(W);
     if all(d==d(1)), d = repmat(150, size(d));
     else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
     end
-    d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
 elseif do_manual_node_size
     d = node_size;
 else
@@ -211,10 +216,8 @@ end
 for node_i = 1:size(X,1)
     if wh_hl(node_i)
         if dogroup
-            for i = 1:numel(grouping)
-                h.node{node_i} = scatter(X(node_i,1), X(node_i,2), d(node_i), 'filled', 'MarkerFaceColor', g_cols(grouping(node_i),:), 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
-                hold on;
-            end
+            h.node{node_i} = scatter(X(node_i,1), X(node_i,2), d(node_i), 'filled', 'MarkerFaceColor', g_cols(grouping(node_i),:), 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
+            hold on;
         else
             h.node{node_i} = scatter(X(node_i,1), X(node_i,2), d(node_i), 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
             hold on;
