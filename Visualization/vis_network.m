@@ -128,6 +128,9 @@ for i = 1:length(varargin)
             case {'group'}
                 dogroup = 1;
                 grouping = varargin{i+1};
+                if size(grouping,1) == 1
+                    grouping = grouping';
+                end
             case {'groupcolor'}
                 g_cols = varargin{i+1};
             case {'highlight'}

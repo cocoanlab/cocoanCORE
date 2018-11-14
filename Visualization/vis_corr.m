@@ -86,6 +86,7 @@ tickcolor = 'k';
 tickwidth = 2;
 ticklength = 5;
 tickoffset = 1;
+same_fig = 0;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -153,6 +154,8 @@ for i = 1:length(varargin)
                 sig_col = varargin{i+1};
             case {'noplot', 'nodisplay'}
                 do_display = 0;
+            case {'same_fig'}
+                same_fig = 1;
         end
     end
 end
@@ -229,7 +232,11 @@ if do_display
     size_max = size_r+.5;
     
     % close all;
-    h = figure;
+    if ~same_fig
+        h = figure;
+    else
+        h = gcf;
+    end
     
     % imagesc
     if dosmooth

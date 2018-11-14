@@ -109,7 +109,7 @@ if size(r,1) == 1 || size(r,2) == 1
     n = 1/2+sqrt(max(size(r,1), size(r,2))*2+1/4);
 else
     if size(r,1) ~= size(r,2)
-        error('r should be symmetric. Check your input.');
+        warning('r should be symmetric. Check your input.');
     end
     n = size(r,1);
 end
