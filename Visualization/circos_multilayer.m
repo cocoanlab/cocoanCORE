@@ -2,13 +2,23 @@ function out = circos_multilayer(A, varargin)
 
 rotate_angle = 0;
 add_layer = {};
-edge_color = [227,26,28]./255;
-% edge_color = [215,25,28]./255;
+do_region_label = false;
+% pos_edge_color = [227,26,28]./255;
+pos_edge_color = [255,0,0]./255;
+% neg_edge_color = [43,131,186]./255;
+neg_edge_color = [10,150,255]./255;
+region_names_size = 6;
 laterality = false;
 radiological = false;
+sep_pos_neg = false;
 dot_node = 10;
 dot_interval = 3;
 patch_size_coef = 0.05;
+layer = {};
+alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
+width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
+% alpha_fun = @(x) (x - min(x)) ./ (max(x) - min(x)) * 0.9 + 0.1;
+% width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2 + 1;
 
 default_col_names = { ...
     'degree', ...
@@ -41,12 +51,21 @@ for i = 1:length(varargin)
             case {'add_layer'}
                 add_layer = varargin{i+1};
             case {'region_names'}
+                do_region_label = true;
                 region_names = varargin{i+1};
+            case {'region_names_size'}
+                region_names_size = varargin{i+1};
             case {'laterality'}
                 laterality = true;
                 lat_index = varargin{i+1};
             case {'radiological'}
                 radiological = true;
+            case {'sep_pos_neg'}
+                sep_pos_neg = true;
+            case {'alpha_fun'}
+                alpha_fun = varargin{i+1};
+            case {'width_fun'}
+                width_fun = varargin{i+1};
         end
     end
 end
@@ -58,7 +77,9 @@ for i = 1:length(add_layer)
             case {'layer'}
                 j = j + 1;
                 layer{j} = add_layer{i+1};
-                layer{j} = (layer{j} - min(layer{j})) ./ (max(layer{j}) - min(layer{j}));
+                if max(layer{j}) ~= min(layer{j})
+                    layer{j} = (layer{j} - min(layer{j})) ./ (max(layer{j}) - min(layer{j}));
+                end
             case {'color'}
                 if ~ischar(add_layer{i+1})
                     layer_color{j} = add_layer{i+1};
@@ -132,7 +153,7 @@ for i = 1:N_node
     ref_line = [cos(range_theta{i})', sin(range_theta{i})'];
     
     %% Layer
-    for j = 1:numel(layer)
+    for j = 1:length(layer)
         
         bottom_line = ref_line .* (1 + (j-1)*patch_size_coef);
         top_line = ref_line .* (1 + j*patch_size_coef);
@@ -148,7 +169,9 @@ for i = 1:N_node
     end
     
     %% Group color
-    j = j + 1;
+    if isempty(j); j = 1;
+    elseif ~isempty(j); j = j + 1;
+    end
     bottom_line = ref_line .* (1 + (j-1)*patch_size_coef);
     top_line = ref_line .* (1 + j*patch_size_coef);
     if mod(j, 2) == 1
@@ -161,13 +184,15 @@ for i = 1:N_node
     patch([patch_vec(:,1)], [patch_vec(:,2)], patch_color, 'linewidth', 0.5, 'edgecolor', [.5 .5 .5], 'edgealpha', .5);
     
     %% ROI text
-    text_line = mean(ref_line) .* (1 + j*patch_size_coef);
-    text_rotate = rad2deg(mean(range_theta{i}));
-    if text_rotate < -90
-        text_rotate = text_rotate + 180;
-        h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', 7, 'Rotation', text_rotate);
-    else
-        h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', 7, 'Rotation', text_rotate);
+    if do_region_label
+        text_line = mean(ref_line) .* (1 + j*patch_size_coef);
+        text_rotate = rad2deg(mean(range_theta{i}));
+        if text_rotate < -90
+            text_rotate = text_rotate + 180;
+            h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, 'Rotation', text_rotate);
+        else
+            h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', region_names_size, 'Rotation', text_rotate);
+        end
     end
     
 end
@@ -177,25 +202,10 @@ end
 
 [row,col,w] = find(triu(A,1));
 
-[~, sorted_idx] = sort(w, 'descend');
-
-alpha_w = (w - min(w)) ./ (max(w) - min(w)) * 0.9 + 0.1;
-width_w = (w - min(w)) ./ (max(w) - min(w)) * 2 + 1;
-% 
-% alpha_w = zeros(size(w)) + 0.25;
-% alpha_w(sorted_idx(11:50)) = 0.5;
-% alpha_w(sorted_idx(1:10)) = 1;
-% 
-% width_w = zeros(size(w)) + 2;
-% width_w(sorted_idx(11:50)) = 3;
-% width_w(sorted_idx(1:10)) = 4;
-
-% prctile_A = prctile(A(A~=0), [0 90 99]);
-% alpha_vals = [0.1 0.2 1];
-% alpha_A = zeros(size(A));
-% for i = 1:numel(prctile_A)
-%     alpha_A(A >= prctile_A(i)) = alpha_vals(i);
-% end
+% alpha_w = (w - min(w)) ./ (max(w) - min(w)) * 0.9 + 0.1;
+alpha_w = alpha_fun(w);
+% width_w = (abs(w) - min(abs(w))) ./ (max(abs(w)) - min(abs(w))) * 2 + 1;
+width_w = width_fun(w);
 
 for i = 1:numel(w)
     
@@ -216,11 +226,23 @@ for i = 1:numel(w)
         theta = linspace(thetaLim(1),thetaLim(2)).';
     end
     
-    line(...
-        r*cos(theta)+x0,...
-        r*sin(theta)+y0,...
-        'LineWidth', width_w(i),...
-        'PickableParts','none', 'color', [edge_color alpha_w(i)]);
+    if ~sep_pos_neg
+        edge_color = pos_edge_color;
+        line(...
+            r*cos(theta)+x0,...
+            r*sin(theta)+y0,...
+            'LineWidth', width_w(i),...
+            'PickableParts','none', 'color', [edge_color alpha_w(i)]);
+    elseif sep_pos_neg
+        if w(i) >= 0; edge_color = pos_edge_color;
+        elseif w(i) < 0; edge_color = neg_edge_color;
+        end
+        line(...
+            r*cos(theta)+x0,...
+            r*sin(theta)+y0,...
+            'LineWidth', width_w(i),...
+            'PickableParts','none', 'color', [edge_color alpha_w(i)]);
+    end
 
 end
 
