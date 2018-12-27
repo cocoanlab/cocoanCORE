@@ -129,13 +129,15 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %        can simply provide o2 (fmridisplay object) as an input. It
 %        automatically check whether there is an input that is fmridisplay
 %        object, and reuse those montage. 
+        
 
-global surface_style color depth poscm negcm do_color do_all all_style
+global surface_style color depth poscm negcm do_color do_all all_style do_full
 
 surface_style = 'veryinflated';
 do_color = false;
 depth = 3;
 do_all = false;
+do_full = false;
 do_montage = true;
 do_surface = true;
 do_medial_surface = false;
@@ -180,6 +182,9 @@ for i = 1:length(varargin)
                 disp('E.g., ''all2_xyz'', [-5 2 -35 35 -30:12:60], first four will be used as x''s and the six numbers after that');
                 disp('      will be used as z. More than 10 numbers will be ignored.');
                 disp('***************************************************************************************************************');
+            case {'fig_full'}
+                do_full = true;
+                
         end
     end
 end
@@ -225,16 +230,27 @@ if do_surface && ~do_all
         view(-90, 0);
     end
     
-elseif do_all
-    
-    set(gcf, 'position', [0 s(4)/3*2 s(3) s(4)/3]);
+elseif do_all 
+    if do_full
+        set(gcf, 'position', [0 s(4) s(3) s(4)]);
+    else
+        set(gcf, 'position', [0 s(4)/3*2 s(3) s(4)/3]);
+    end
     
     switch all_style
         
         case 'v1'
-            axes_positions = {[0.87 0 .1 1], [0.01 0 .1 1]};
+            if do_full
+                axes_positions = {[0.84 0.7 .15 .15], [0.01 0.7 .15 .15]}; % [left bottom width height]
+            else
+                axes_positions = {[0.87 0 .1 1], [0.01 0 .1 1]};
+            end
         case 'v2'
-            axes_positions = {[0.85 0 .13 1], [0.02 0 .13 1]};
+            if do_full
+                axes_positions = {[0.85 0.7 .13 .13], [0.02 0.7 .13 .13]};
+            else                
+                axes_positions = {[0.85 0 .13 1], [0.02 0 .13 1]};
+            end
     end
     
     axes('Position', axes_positions{1});
@@ -377,7 +393,7 @@ end
 
 function o2 = draw_montage(vars)
 
-global do_all all_style
+global do_all all_style do_full
 
 % default
 axial_slice_range = [-20 25];
@@ -483,7 +499,7 @@ if ~do_all
     squeeze_axes_percent(o2.montage{k}.axis_handles, squeeze_z);
     
 else
-    % predefined styles
+    % predefined styles    
     switch all_style
         case 'v1'
 
@@ -492,12 +508,17 @@ else
             
             a_initial = 0.4;
             a_interval = 0.055;
-            
-            axes_positions = {[s_first(1) 0 .1 1], [s_first(1)+s_interval(1) 0 .1 1], ... % sagittal 1
-                [s_first(2) 0 .1 1], [s_first(2)+s_interval(2) 0 .1 1], ... % sagittal 2
-                [a_initial 0 .075 1], [a_initial+a_interval 0 .075 1], [a_initial+a_interval*2 0 .075 1], [a_initial+a_interval*3 0 .075 1], ... % axial
-                [a_initial+a_interval*4 0 .075 1], [a_initial+a_interval*5 0 .075 1],  [a_initial+a_interval*6 0 .075 1], [a_initial+a_interval*7 0 .075 1]};
-            
+            if do_full
+                axes_positions = {[s_first(1) 0.7 .15 .15], [s_first(1)+s_interval(1) 0.7 .15 .15], ... % sagittal 1
+                    [s_first(2) 0.7 .15 .15], [s_first(2)+s_interval(2) 0.7 .15 .15], ... % sagittal 2
+                    [a_initial 0.7 .075 .15], [a_initial+a_interval 0.7 .075 .15], [a_initial+a_interval*2 0.7 .075 .15], [a_initial+a_interval*3 0.7 .075 .15], ... % axial
+                    [a_initial+a_interval*4 0.7 .075 .15], [a_initial+a_interval*5 0.7 .075 .15],  [a_initial+a_interval*6 0.7 .075 .15], [a_initial+a_interval*7 0.7 .075 .15]};
+            else
+                axes_positions = {[s_first(1) 0 .1 1], [s_first(1)+s_interval(1) 0 .1 1], ... % sagittal 1
+                    [s_first(2) 0 .1 1], [s_first(2)+s_interval(2) 0 .1 1], ... % sagittal 2
+                    [a_initial 0 .075 1], [a_initial+a_interval 0 .075 1], [a_initial+a_interval*2 0 .075 1], [a_initial+a_interval*3 0 .075 1], ... % axial
+                    [a_initial+a_interval*4 0 .075 1], [a_initial+a_interval*5 0 .075 1],  [a_initial+a_interval*6 0 .075 1], [a_initial+a_interval*7 0 .075 1]};
+            end
             xyz = [-2 2 -37 37 ... % sagittal
                 -20 -10 0 10 20 30 40 50]; % axial
             if any(strcmp(vars, 'all_xyz')), xyz = vars{find(strcmp(vars, 'all_xyz'))+1}; end
@@ -530,12 +551,17 @@ else
             
             a_initial = 0.46;
             a_interval = 0.06;
-            
-            axes_positions = {[s_first(1) 0 .12 1], [s_first(1)+s_interval(1) 0 .12 1], ... % sagittal 1
-                [s_first(2) 0 .1 1], [s_first(2)+s_interval(2) 0 .1 1], ... % sagittal 2
-                [a_initial 0 .08 1], [a_initial+a_interval 0 .08 1], [a_initial+a_interval*2 0 .08 1], ... % axial
-                [a_initial+a_interval*3 0 .08 1], [a_initial+a_interval*4 0 .08 1], [a_initial+a_interval*5 0 .08 1]};
-            
+            if do_full
+                axes_positions = {[s_first(1) 0.7 .12 .12], [s_first(1)+s_interval(1) 0.7 .12 .12], ... % sagittal 1
+                    [s_first(2) 0.7 .1 .1], [s_first(2)+s_interval(2) 0.7 .1 .1], ... % sagittal 2
+                    [a_initial 0.7 .08 .1], [a_initial+a_interval 0.7 .08 .1], [a_initial+a_interval*2 0.7 .08 .1], ... % axial
+                    [a_initial+a_interval*3 0.7 .08 .1], [a_initial+a_interval*4 0.7 .08 .1], [a_initial+a_interval*5 0.7 .08 .1]};
+            else
+                axes_positions = {[s_first(1) 0 .12 1], [s_first(1)+s_interval(1) 0 .12 1], ... % sagittal 1
+                    [s_first(2) 0 .1 1], [s_first(2)+s_interval(2) 0 .1 1], ... % sagittal 2
+                    [a_initial 0 .08 1], [a_initial+a_interval 0 .08 1], [a_initial+a_interval*2 0 .08 1], ... % axial
+                    [a_initial+a_interval*3 0 .08 1], [a_initial+a_interval*4 0 .08 1], [a_initial+a_interval*5 0 .08 1]};
+            end
             
             xyz = [-2 2 -37 37 ... % sagittal
                 -20 -10 0 10 20 30]; % axial
