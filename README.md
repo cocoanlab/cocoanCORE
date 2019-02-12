@@ -1,3 +1,3 @@
 # cocoanCORE
 
-Core tools for Cocoan Lab
+Core tools for Cocoan Lab.
