@@ -15,10 +15,10 @@ dot_node = 10;
 dot_interval = 3;
 patch_size_coef = 0.05;
 layer = {};
-alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
-width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
-% alpha_fun = @(x) (x - min(x)) ./ (max(x) - min(x)) * 0.9 + 0.1;
-% width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2 + 1;
+% alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
+% width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
+alpha_fun = @(x) (x - min(x)) ./ (max(x) - min(x)) * 0.9 + 0.1;
+width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2 + 1;
 
 default_col_names = { ...
     'degree', ...
