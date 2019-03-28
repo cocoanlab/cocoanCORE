@@ -3,7 +3,7 @@ function out = circos_multilayer(A, varargin)
 rotate_angle = 0;
 add_layer = {};
 do_region_label = false;
-% pos_edge_color = [227,26,28]./255;
+% pos_edge_color = [215,25,28]./255;
 pos_edge_color = [255,0,0]./255;
 % neg_edge_color = [43,131,186]./255;
 neg_edge_color = [10,150,255]./255;
@@ -15,10 +15,10 @@ dot_node = 10;
 dot_interval = 3;
 patch_size_coef = 0.05;
 layer = {};
-% alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
-% width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
-alpha_fun = @(x) (x - min(x)) ./ (max(x) - min(x)) * 0.9 + 0.1;
-width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2 + 1;
+alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
+width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
+% alpha_fun = @(x) (x - min(x)) ./ (max(x) - min(x)) * 0.9 + 0.1;
+% width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2 + 1;
 
 default_col_names = { ...
     'degree', ...
@@ -77,8 +77,8 @@ for i = 1:length(add_layer)
             case {'layer'}
                 j = j + 1;
                 layer{j} = add_layer{i+1};
-                if max(layer{j}) ~= min(layer{j})
-                    layer{j} = (layer{j} - min(layer{j})) ./ (max(layer{j}) - min(layer{j}));
+                if max(layer{j}) > 1 || min(layer{j}) < 0
+                    error('Values of each layer should be between 0 and 1.');
                 end
             case {'color'}
                 if ~ischar(add_layer{i+1})
