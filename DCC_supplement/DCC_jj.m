@@ -40,11 +40,16 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 %
 %     'doverbose' 
 %                     Print out current estimating process.
+%
+%     'noflat'
+%                     Force the output to be reconstructed matrix
+%                     (instead of P*(P-1)/2 (=Pchoose2) by T matrix,
+%                     forces it to be P * P * T matrix form)
 %                     
 %
 % OUTPUTS:
 %
-%     DCC_mat         P*(P-1)/2 (=Pchoose2) by T array of conditional correlations
+%     DCC_mat         P*(P-1)/2 (=Pchoose2) by T matrix of conditional correlations
 %
 %
 % EXAMPLES :
@@ -53,11 +58,6 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 %     DCC_mat = DCC_jj(roi_values, 'simple', 'doverbose'); % Simple version of DCC, without ARMA(1,1) whitening
 %     DCC_mat = DCC_jj(roi_values, 'whiten', 'simple', 'doverbose'); % Simple version of DCC, with ARMA(1,1) whitening
 %     DCC_mat = DCC_jj(roi_values, 'whiten', 'doverbose', 'dosaveload', savedir); % Non-simple version, with intermittent save onto savedir
-%     size(DCC_mat)
-%
-%     ans =
-% 
-%             1225         200
 %
 % Created by J.J. Lee (modified from DCC.m)
 % 2017.07.14
