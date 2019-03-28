@@ -1,6 +1,7 @@
 function Ct = DCC_garch_jj(dat, doverbose)
 % Modified version of dcc_mvgarch.m
-% Simplify output
+% Simplify output, Faster speed
+% Can accomodate NaN
 
 %% BASIC setting : Find zero timeseries to replace it with NaN
 
@@ -44,10 +45,10 @@ options = optimset(options, 'Display', 'off', 'Diagnostics', 'off', 'MaxFunEvals
 for i=1:k2
     if doverbose, fprintf(1,'Estimating GARCH model for Series %d\n',i); end
     [univariate{i}.parameters, ~, ~, ~, univariate{i}.ht, ~, dcc_exit] = ...
-        fattailed_garch_CAPS2(dat(:,i), archP(i), garchQ(i), 'NORMAL', [], options);
+        fattailed_garch_jj(dat(:,i), archP(i), garchQ(i), 'NORMAL', [], options);
     stdresid(:,i) = dat(:,i)./sqrt(univariate{i}.ht);
     if dcc_exit < 1
-        error('DCC does not converge. : fattailed_garch_CAPS2');
+        error('DCC does not converge. : fattailed_garch_jj');
     end
 end
 

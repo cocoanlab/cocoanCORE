@@ -2,6 +2,10 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 % function DCC_mat = DCC_jj(roi_values, varargin)
 %
 % Estimate a multivariate GARCH model using the DCC estimator of Engle and Sheppard
+% Modified version (Simplified). Basically, output is same as original DCC
+% You should add DCC on your matlab path to use this function.
+% This function also uses DCC_garch_jj and fattailed_garch_jj, which are
+% modified version of dcc_mvgarch and fattailed_garch function.
 % 
 % INPUTS:
 %
@@ -156,7 +160,7 @@ if onlywhiten
     
 elseif dosimple
     
-    DCC_mat = DCC_CAPS2_garch(roi_values, doverbose);
+    DCC_mat = DCC_garch_jj(roi_values, doverbose);
     if doflat
         DCC_mat = shiftdim(DCC_mat, 2);
         DCC_mat = DCC_mat(:, triu(true(k1,k1),1))';
@@ -188,7 +192,7 @@ elseif ~dosimple
             c1_i = c_i - c2_i*(c2_i-1)/2;
             c2_i = c2_i + 1; % because of triu
             dat = [roi_values(:,c1_i) roi_values(:,c2_i)];
-            tempdat = DCC_CAPS2_garch(dat, doverbose);
+            tempdat = DCC_garch_jj(dat, doverbose);
             DCC_mat(c_i,:) = squeeze(tempdat(1,2,:));
         end
     else
@@ -199,7 +203,7 @@ elseif ~dosimple
                 count_i = count_i + 1;
                 if count_i >= startpoint
                     dat = [roi_values(:,c1_i) roi_values(:,c2_i)];
-                    tempdat = DCC_CAPS2_garch(dat, doverbose);
+                    tempdat = DCC_garch_jj(dat, doverbose);
                     DCC_mat(count_i,:) = squeeze(tempdat(1,2,:));
                     
                     if mod(count_i, 10) ~= 1
