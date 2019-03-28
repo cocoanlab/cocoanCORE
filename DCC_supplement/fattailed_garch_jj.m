@@ -1,7 +1,8 @@
 function [parameters, likelihood, stderrors, robustSE, ht, scores, EXITFLAG] = fattailed_garch_jj(data , p , q , errors, startingvals, options)
+
 % Modified version of fattailed_garch.m 
 % ignores exit flag
-%
+
 
 doverbose = 0;
 
@@ -12,8 +13,7 @@ if nargin<6
 end
 
 
-
-if strcmp(errors,'NORMAL') | strcmp(errors,'STUDENTST') | strcmp(errors,'GED')
+if strcmp(errors,'NORMAL') || strcmp(errors,'STUDENTST') || strcmp(errors,'GED')
    if strcmp(errors,'NORMAL') 
       errortype = 1;
    elseif strcmp(errors,'STUDENTST') 
@@ -33,7 +33,7 @@ elseif isempty(data)
 end
 
 
-if (length(q) > 1) | any(q < 0)
+if (length(q) > 1) || any(q < 0)
    error('Q must ba a single positive scalar or 0 for ARCH.')
 end
 
@@ -51,7 +51,7 @@ else
 end
 
 
-if nargin<=4 | isempty(startingvals)
+if nargin<=4 || isempty(startingvals)
    guess  = 1/(2*m+1);
    alpha  =  .15*ones(p,1)/p;
    beta   =  .75*ones(q,1)/q;
@@ -85,7 +85,7 @@ sumB =  [zeros(1+p+q,1);...
       1];                          
 
 
-if (nargin <= 5) | isempty(options)
+if (nargin <= 5) || isempty(options)
    options  =  optimset('fmincon');
    options  =  optimset(options , 'TolFun'      , 1e-006);
    options  =  optimset(options , 'Display'     , 'iter');

@@ -36,7 +36,7 @@ garchQ = repmat(1, 1, k2);
 
 %% Main Function
         
-% Now lest do the univariate garching using fattailed_garch as it's faster then garchpq
+% Now let's do the univariate garching using fattailed_garch as it's faster then garchpq
 
 stdresid = dat;
 options = optimset('fmincon');
@@ -77,7 +77,8 @@ parameters = [parameters; dccparameters'];
 
 
 
-%We now have Ht and the likelihood
+% We now have Ht and the likelihood
+
 if ~doNaN
     [~, Ct, ~, ~] = dcc_mvgarch_full_likelihood(parameters, dat, archP, garchQ, dccP, dccQ);
 elseif doNaN

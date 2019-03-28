@@ -257,7 +257,7 @@ if doviolin
 end
 
 x_cell = enforce_cell_array(x);
-xvalues = get_violin_points(1:numel(x), x);
+xvalues = get_violin_points(1:size(x,2), x);
 
 dot_locs.x = xvalues;
 dot_locs.y = x_cell;

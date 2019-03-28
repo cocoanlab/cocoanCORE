@@ -1,4 +1,5 @@
 function DCC_mat = DCC_jj(roi_values, varargin)
+
 % function DCC_mat = DCC_jj(roi_values, varargin)
 %
 % Estimate a multivariate GARCH model using the DCC estimator of Engle and Sheppard
@@ -6,6 +7,9 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 % You should add DCC on your matlab path to use this function.
 % This function also uses DCC_garch_jj and fattailed_garch_jj, which are
 % modified version of dcc_mvgarch and fattailed_garch function.
+%
+% NOTE: To use this, you need DCC toolbox in your path. You can get it from 
+%       https://github.com/canlab/Lindquist_Dynamic_Correlation
 % 
 % INPUTS:
 %
@@ -48,7 +52,7 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 %     DCC_mat = DCC_jj(roi_values, 'whiten', 'simple', 'doverbose');
 %     DCC_mat = DCC_jj(roi_values, 'whiten', 'doverbose', 'dosaveload', savedir);
 %
-% Modified by J.J. Lee
+% Created by J.J. Lee (modified from DCC.m)
 % 2017.07.14
 
 
