@@ -1,4 +1,6 @@
-function Ct = DCC_CAPS2_garch(dat, doverbose)
+function Ct = DCC_garch_jj(dat, doverbose)
+% Modified version of dcc_mvgarch.m
+% Simplify output
 
 %% BASIC setting : Find zero timeseries to replace it with NaN
 

@@ -1,5 +1,5 @@
-function DCC_mat = DCC_CAPS2(roi_values, varargin)
-% function DCC_mat = DCC_CAPS2(roi_values, varargin)
+function DCC_mat = DCC_jj(roi_values, varargin)
+% function DCC_mat = DCC_jj(roi_values, varargin)
 %
 % Estimate a multivariate GARCH model using the DCC estimator of Engle and Sheppard
 % 
@@ -41,10 +41,10 @@ function DCC_mat = DCC_CAPS2(roi_values, varargin)
 %
 % EXAMPLES :
 %
-%     DCC_mat = DCC_CAPS2(roi_values, 'whiten', 'simple', 'doverbose');
-%     DCC_mat = DCC_CAPS2(roi_values, 'whiten', 'doverbose', 'dosaveload', savedir);
+%     DCC_mat = DCC_jj(roi_values, 'whiten', 'simple', 'doverbose');
+%     DCC_mat = DCC_jj(roi_values, 'whiten', 'doverbose', 'dosaveload', savedir);
 %
-% Modified by J. J. Lee.
+% Modified by J.J. Lee
 % 2017.07.14
 
 
