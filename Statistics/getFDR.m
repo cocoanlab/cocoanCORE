@@ -6,6 +6,7 @@ function [pFDR] = getFDR(p,q)
 %   by ChoongWan Woo
 
 pFDR = 1;
+p = reshape(p, numel(p), 1); 
 V = length(p);
 P = sort(p);
 for i=1:V
