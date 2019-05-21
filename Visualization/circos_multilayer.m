@@ -1,11 +1,105 @@
-function out = circos_multilayer(A, varargin)
+function circos_multilayer(A, varargin)
+
+% This function draws circos plot with multiple layers.
+%
+%
+% :Usage:
+% ::
+%     circos_multilayer(A, varargin)
+%
+%
+% :Input:
+% ::
+%   - A                  Adjacency matrix
+%
+%
+% :Optional Input:
+%
+%   - group              group assignment of nodes. ex) [1,1,1,2,2,2,3,4], ...
+%   - group_color        RGB color values for each group. [groups X 3]
+%   - rotate             rotate circos plot clockwise. (degree)
+%   - add_layer          add additional layers, specified by following key-value pairs.
+%                        (e.g., 'add_layer', {'layer', deg_cent, 'color', deg_cent_cols})
+%                        the values followed by 'layer' will be presented
+%                        with the colormap values following 'color'.
+%                        for example, if you want to add 'degree centrality'
+%                        layer in the circos plot and define color with 5-level,
+%                        put degree centrality value in 'deg_cent'
+%                        and 5 RGB values [5 X 3] in 'deg_cent_cols'.
+%                        (Note: all values for layer should be normalized,
+%                        ranging from 0 to 1)
+%   - region_names       labels for regions (or nodes)
+%   - region_names_size  size of labels for regions
+%   - laterality         laterality index for circos plot (usually for cortex)
+%                        -1: Left, 1: Right, 0: No laterality
+%   - radiological       laterality display in radiological convention. (default: neurological)
+%   - sep_pos_neg        separate positive and negative connections.
+%   - alpha_fun          user-defined function for setting alpha value of
+%                        connections corresponding to connectivity values.
+%                        (default: @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;)
+%   - width_fun          user-defined function for setting alpha value of
+%                        connections corresponding to connectivity values.
+%                        (default: @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;)
+%
+%
+% :Output:
+% ::   
+%
+%
+% :Example:
+% ::
+%   % generating undirected and weighted adjacency matrix
+%   A = randn(100,100); % to make realistic network, use other fx.
+%   A = A + A';
+%   A = A ./ max(abs(A(:)));
+%   A(1:length(A)+1:end) = 0;
+%   % defining groups of nodes
+%   A_group = randi(5,100,1);
+%   A_group_cols = [0    0.4470    0.7410
+%       0.8500    0.3250    0.0980
+%       0.9290    0.6940    0.1250
+%       0.4940    0.1840    0.5560
+%       0.4660    0.6740    0.1880];
+%   % add 'weighted degree centrality' layer
+%   A_pos_deg_cent = sum(A .* double(A>0), 2) ./ (size(A, 1) - 1);
+%   A_pos_deg_cent_cols = cell2mat(arrayfun(@(x, y) linspace(x, y, 10), ...
+%       [179,0,0], [254,240,17], 'UniformOutput', false)')' ./ 255;
+%   A_neg_deg_cent = -sum(A .* double(A<0), 2) ./ (size(A, 1) - 1);
+%   A_neg_deg_cent_cols = cell2mat(arrayfun(@(x, y) linspace(x, y, 10), ...
+%       [8,104,172], [240,290,232], 'UniformOutput', false)')' ./ 255;
+%   % region names
+%   A_names = cellstr(strcat(repmat('node', 100, 1), num2str((1:100)')));
+%   % laterality
+%   A_lat = [repmat([-1; 1], 45, 1); zeros(10,1)];
+%   % draw circos plot
+%   circos_multilayer(A, 'group', A_group, 'group_color', A_group_cols, ...
+%       'add_layer', {'layer', A_pos_deg_cent, 'color', A_pos_deg_cent_cols, ...
+%       'layer', A_neg_deg_cent, 'color', A_neg_deg_cent_cols}, ...
+%       'region_names', A_names, 'laterality', A_lat, 'sep_pos_neg');
+%   
+% ..
+%     Author and copyright information:
+%
+%     Copyright (C) Jan 2019  Choong-Wan Woo & Jae-Joong Lee
+%
+%     This program is free software: you can redistribute it and/or modify
+%     it under the terms of the GNU General Public License as published by
+%     the Free Software Foundation, either version 3 of the License, or
+%     (at your option) any later version.
+%
+%     This program is distributed in the hope that it will be useful,
+%     but WITHOUT ANY WARRANTY; without even the implied warranty of
+%     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%     GNU General Public License for more details.
+%
+%     You should have received a copy of the GNU General Public License
+%     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% ..
 
 rotate_angle = 0;
 add_layer = {};
 do_region_label = false;
-% pos_edge_color = [215,25,28]./255;
 pos_edge_color = [255,0,0]./255;
-% neg_edge_color = [43,131,186]./255;
 neg_edge_color = [10,150,255]./255;
 region_names_size = 6;
 laterality = false;
@@ -94,8 +188,6 @@ end
 
 
 %% Calculating theta
-
-% A = reformat_r_new(w, 'reconstruct'); %DELETE IT!!!
 
 if laterality
     
@@ -202,9 +294,7 @@ end
 
 [row,col,w] = find(triu(A,1));
 
-% alpha_w = (w - min(w)) ./ (max(w) - min(w)) * 0.9 + 0.1;
 alpha_w = alpha_fun(w);
-% width_w = (abs(w) - min(abs(w))) ./ (max(abs(w)) - min(abs(w))) * 2 + 1;
 width_w = width_fun(w);
 
 for i = 1:numel(w)
@@ -246,7 +336,6 @@ for i = 1:numel(w)
 
 end
 
-axis off
-% set(gcf, 'color', 'w', 'position', [1   444   990   920]);
-
+axis off;
+set(gcf, 'color', 'w');
 end
