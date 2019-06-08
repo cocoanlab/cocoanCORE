@@ -41,6 +41,10 @@ end
 fprintf('\ndeleting... remaining # of regions = %d', numel(k));
 
 r = r(k);
-dat = stat_img;
+for i = 1:numel(r)
+    r(i).Z = r(i).val';
+end
+
+dat = region2imagevec(r);
 
 end
