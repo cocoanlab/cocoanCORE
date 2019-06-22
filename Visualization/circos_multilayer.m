@@ -279,7 +279,7 @@ for i = 1:N_node
     if do_region_label
         text_line = mean(ref_line) .* (1 + j*patch_size_coef);
         text_rotate = rad2deg(mean(range_theta{i}));
-        if text_rotate < -90
+        if text_rotate < -90 || text_rotate > 90
             text_rotate = text_rotate + 180;
             h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, 'Rotation', text_rotate);
         else
