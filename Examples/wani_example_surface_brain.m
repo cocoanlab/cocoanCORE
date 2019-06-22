@@ -136,3 +136,61 @@ end
 % faces = faces + 1; 
 % vertices = vertices + 1;
 % save('/Users/clinpsywoo/Nas/Resources/github_nas/cocoanlab/cocoanCORE/Canonical_brains/surf_freesurf_inflated_Right.mat', 'vertices', 'faces');
+
+%% Pauli's striatum
+
+close all;
+
+poscm = [116 251 77
+    63 145 93;
+    44 104 238;
+    128 80 163;
+    255 59 92]./255;
+
+pauli = load(which('Pauli2016_striatum_atlas_regions.mat'));
+
+% poscm = colormap_tor([0.96 0.41 0], [1 1 0]);  
+% negcm = colormap_tor([0 1 1], [0.11 0.46 1]); 
+
+% h = add_surface(which('surf_BrainMesh_ICBM152_smoothed.mat'));
+% h2 = add_surface(which('surf_BrainMesh_Ch2withCerebellum.mat'));
+% set(h2, 'FaceColor', [.7 .7 .7], 'FaceAlpha', .1);
+% 
+% cluster_surf(clusters1,fullfile(maskdir, 'surf_parahippo_havardoxford_20_r.mat'), 2, 'heatmap', 'colormaps', poscm, negcm)
+% cluster_surf(clusters1,fullfile(maskdir, 'surf_parahippo_havardoxford_20_l.mat'), 2, 'heatmap', 'colormaps', poscm, negcm)
+
+p1 = cluster_surf(pauli.r,which('surf_spm2_caudate_smoothed.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
+p2 = cluster_surf(pauli.r,which('surf_accumbens_havardoxford_20_r.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
+p3 = cluster_surf(pauli.r,which('surf_accumbens_havardoxford_20_l.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
+p4 = cluster_surf(pauli.r,which('spm_surf_putamen_luke_smoothed.mat'), 3, 'heatmap', 'colormaps', poscm, negcm);
+
+p5 = add_surface(which('surf_hippocampus_havardoxford_20_r.mat'));
+p6 = add_surface(which('surf_hippocampus_havardoxford_20_l.mat'));
+
+p7 = add_surface(which('surf_amygdala_havardoxford_20_r.mat'));
+p8 = add_surface(which('surf_amygdala_havardoxford_20_l.mat'));
+
+col = [.6 .6 .6];
+set(p5,'FaceColor',col, 'facealpha', .3);
+set(p6,'FaceColor',col, 'facealpha', .3);
+set(p7,'FaceColor',col, 'facealpha', .3);
+set(p8,'FaceColor',col, 'facealpha', .3);
+
+lighting gouraud;
+material dull
+view(-141, 13);
+camlight(80, 20)
+
+% % view(141, 13);
+axis vis3d;
+
+a = get(gca, 'children');
+for i = 1:numel(a)
+    try
+        set(a(i), 'ambientStrength', .7);
+    catch
+
+    end
+end
+
+set(gcf, 'position', [313    12   872   693]);

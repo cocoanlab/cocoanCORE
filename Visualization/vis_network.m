@@ -109,6 +109,8 @@ noline = 0;
 ln_pos_color = [0.8431    0.0980    0.1098];
 ln_neg_color = [0.1686    0.5137    0.7294];
 ln_width = 1.5;
+do_arrow = false;
+arrow_len = 10;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -146,6 +148,10 @@ for i = 1:length(varargin)
                 ln_neg_color = varargin{i+1};
             case {'linewidth'}
                 ln_width = varargin{i+1};
+            case {'arrow'}
+                do_arrow = true;
+            case {'arrow_length'}
+                arrow_len = varargin{i+1};
         end
     end
 end
@@ -180,29 +186,67 @@ if do3d
 end
 
 if ~noline
+    if do_arrow
+        
+        [neg_i,neg_j] = find(W < 0);
+        
+        for k = 1:numel(neg_i)
 
-    [neg_i,neg_j] = find(W < 0);
-    
-    for k = 1:numel(neg_i)
-        h.edge_neg(k) = line([X(neg_i(k),1) X(neg_j(k),1)], [X(neg_i(k),2) X(neg_j(k),2)]);
-        if doweight
-            set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
-        else
-            set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', ln_width);
+            x = [X(neg_i(k),1) X(neg_j(k),1)];
+            y = [X(neg_i(k),2) X(neg_j(k),2)];
+            
+            [newx, newy] = prop_reduce(x,y, .7);
+
+            h.edge_neg(k) = arrow([newx(1) newy(1)], [newx(2) newy(2)], 'length', arrow_len);
+            if doweight
+                set(h.edge_neg(k), 'edgecolor', ln_neg_color, 'facecolor', ln_pos_color,  'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
+            else
+                set(h.edge_neg(k), 'edgecolor', ln_neg_color, 'facecolor', ln_pos_color, 'linewidth', ln_width);
+            end
+            hold on;
         end
-        hold on;
-    end
-    
-    [pos_i,pos_j] = find(W > 0);
-    
-    for k = 1:numel(pos_i)
-        h.edge_pos(k) = line([X(pos_i(k),1) X(pos_j(k),1)], [X(pos_i(k),2) X(pos_j(k),2)]);
-        if doweight
-            set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', new_s(sum([i==pos_i(k) j==pos_j(k)],2)==2));
-        else
-            set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', ln_width);
+        
+        [pos_i,pos_j] = find(W > 0);
+        
+        for k = 1:numel(pos_i)
+            
+            x = [X(pos_i(k),1) X(pos_j(k),1)];
+            y = [X(pos_i(k),2) X(pos_j(k),2)];
+            
+            [newx, newy] = prop_reduce(x,y, .7);
+            
+            h.edge_pos(k) = arrow([newx(1) newy(1)], [newx(2) newy(2)], 'length', arrow_len);            
+            if doweight
+                set(h.edge_pos(k), 'edgecolor', ln_pos_color, 'facecolor', ln_pos_color, 'linewidth', new_s(sum([i==pos_i(k) j==pos_j(k)],2)==2));
+            else
+                set(h.edge_pos(k), 'edgecolor', ln_pos_color, 'facecolor', ln_pos_color, 'linewidth', ln_width);
+            end
+            hold on;
         end
-        hold on;
+    else
+        [neg_i,neg_j] = find(W < 0);
+        
+        for k = 1:numel(neg_i)
+            h.edge_neg(k) = line([X(neg_i(k),1) X(neg_j(k),1)], [X(neg_i(k),2) X(neg_j(k),2)]);
+            if doweight
+                set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
+            else
+                set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', ln_width);
+            end
+            hold on;
+        end
+        
+        [pos_i,pos_j] = find(W > 0);
+        
+        for k = 1:numel(pos_i)
+            h.edge_pos(k) = line([X(pos_i(k),1) X(pos_j(k),1)], [X(pos_i(k),2) X(pos_j(k),2)]);
+            if doweight
+                set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', new_s(sum([i==pos_i(k) j==pos_j(k)],2)==2));
+            else
+                set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', ln_width);
+            end
+            hold on;
+        end
     end
 end
 
@@ -273,5 +317,15 @@ end
 
 axis off;
 set(gcf, 'position', [360   235   570   463], 'color', 'w');
+
+end
+
+function [newx, newy] = prop_reduce(x,y, prop)
+
+xstep = (x(2)-x(1)).*((1-prop)/2);
+newx = [x(1)+xstep x(2)-xstep];
+
+ystep = (y(2)-y(1)).*((1-prop)/2);
+newy = [y(1)+ystep y(2)-ystep];
 
 end

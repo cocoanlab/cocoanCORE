@@ -46,7 +46,7 @@ h_patch = patch(xdata,ydata,'y','linestyle', 'none', 'FaceColor', color2, 'faceA
 
 hold on;
 
-h_line = plot(xaxis, mean, 'o', 'linewidth', 2, 'color', color, 'MarkerSize', 4, 'MarkerFaceColor', color);
+h_line = plot(xaxis, mean, '-', 'linewidth', linew, 'color', color, 'MarkerSize', 4, 'MarkerFaceColor', color);
 % h_line = plot(xaxis, mean, '-', 'linewidth', linew, 'color', color);
 
 end

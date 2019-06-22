@@ -7,7 +7,7 @@ function out = plot_y_yfit(yval, yfit, varargin)
 % case {'ylim'}
 %     ylim = varargin{i+1};
 
-position = [360   536   183   162];
+position = [1   747   218   208];
 
 xlim = [-.1 1.2];
 ylim = [-.1 .4];
