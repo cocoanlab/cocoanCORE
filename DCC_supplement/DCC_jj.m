@@ -3,10 +3,8 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 % function DCC_mat = DCC_jj(roi_values, varargin)
 %
 % Estimate a multivariate GARCH model using the DCC estimator of Engle and Sheppard
-% Modified version (Simplified). Basically, output is same as original DCC
-% You should add DCC on your matlab path to use this function.
-% This function also uses DCC_garch_jj and fattailed_garch_jj, which are
-% modified version of dcc_mvgarch and fattailed_garch function.
+% Modified version (simplified). Basically, algorithm is exactly same as original DCC.
+% This function also uses DCC_garch_jj, which is modified version of dcc_mvgarch function.
 %
 % NOTE: To use this, you need DCC toolbox in your path. You can get it from 
 %       https://github.com/canlab/Lindquist_Dynamic_Correlation
@@ -19,10 +17,10 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 % Optional Inputs:
 %
 %     'whiten'
-%                     Use ARMA(1, 1) model to remove autocorrelation
+%                     Use ARMA(1,1) model to remove autocorrelation
 %
 %     'simple'
-%                     Estimate parameters from the whole connections.
+%                     Estimate DCC parameters from the whole connections.
 %                     Faster than connection-wise parameter estimation.
 %                     However, assumption may not be accurate.
 %
@@ -39,7 +37,7 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 %                     which contains and will contain temporalily saved file.
 %
 %     'doverbose' 
-%                     Print out current estimating process.
+%                     Print out current process.
 %
 %     'noflat'
 %                     Force the output to be reconstructed matrix
@@ -49,15 +47,29 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 %
 % OUTPUTS:
 %
-%     DCC_mat         P*(P-1)/2 (=Pchoose2) by T matrix of conditional correlations
+%     DCC_mat         P*(P-1)/2 (=Pchoose2) by T matrix of dynamic conditional correlations
 %
 %
 % EXAMPLES :
 %
 %     roi_values = randn(200,50); % Generate T = 200, P = 100 data
-%     DCC_mat = DCC_jj(roi_values, 'simple', 'doverbose'); % Simple version of DCC, without ARMA(1,1) whitening
-%     DCC_mat = DCC_jj(roi_values, 'whiten', 'simple', 'doverbose'); % Simple version of DCC, with ARMA(1,1) whitening
-%     DCC_mat = DCC_jj(roi_values, 'whiten', 'doverbose', 'dosaveload', savedir); % Non-simple version, with intermittent save onto savedir
+%     DCC_mat = DCC_jj(roi_values, 'simple', 'doverbose'); % faster version of DCC, without ARMA(1,1) whitening
+%     DCC_mat = DCC_jj(roi_values, 'whiten', 'simple', 'doverbose'); % faster version of DCC, with ARMA(1,1) whitening
+%     DCC_mat = DCC_jj(roi_values, 'whiten', 'doverbose', 'dosaveload', savedir); % slower version, with intermittent save onto savedir
+%
+%
+% Difference from the previous code (DCC.m):
+%
+%     - DCC.m estimate DCC parameters for each pair-wise connection as default (running DCCsimple.m for each connection),
+%       but this function also allows to estimate DCC parameters from whole connections (running DCCsimple.m for whole connections) by specifying 'simple' option.
+%       Note that estimation of DCC parameters from whole connections cannot be accurate (see Example.m in DCC toolbox)
+%     - In case you are fitting DCC for each pair-wise connection, you can specify 'dosaveload' option to load temporailiy saved output (if exists),
+%       and save output intermittently (temporary saving is done every 1,800 connections).
+%     - Supports parallel computing, given Parallel Computing Toolbox
+%     - Output (dynamic connectivity) can be flattened (default) or reconstructed (by specifying 'noflat' option)
+%
+%
+%
 %
 % Created by J.J. Lee (modified from DCC.m)
 % 2017.07.14
