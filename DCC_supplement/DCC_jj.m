@@ -62,7 +62,8 @@ function DCC_mat = DCC_jj(roi_values, varargin)
 %
 %     - DCC.m estimate DCC parameters for each pair-wise connection as default (running DCCsimple.m for each connection),
 %       but this function also allows to estimate DCC parameters from whole connections (running DCCsimple.m for whole connections) by specifying 'simple' option.
-%       Note that estimation of DCC parameters from whole connections cannot be accurate (see Example.m in DCC toolbox)
+%       Note: The core assumption of using 'simple' option is the common volatility in exponential weighted moving average (EWMA)-based model across whole connections (see Lindquist et al., 2014).
+%             Therefore, this assumption can be inaccurate (see also Example.m in DCC toolbox)
 %     - In case you are fitting DCC for each pair-wise connection, you can specify 'dosaveload' option to load temporailiy saved output (if exists),
 %       and save output intermittently (temporary saving is done every 1,800 connections).
 %     - Supports parallel computing, given Parallel Computing Toolbox
