@@ -7,6 +7,7 @@ function [pFDR] = getFDR(p,q)
 
 pFDR = 1;
 p = reshape(p, numel(p), 1);
+p(isnan(p)) = []; % Suhwan added (2019.09.09)
 V = length(p);
 P = sort(p);
 for i=1:V
