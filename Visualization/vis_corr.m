@@ -315,11 +315,11 @@ if do_display
             ytick_x2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset + 0.5;
             ytick_y = [sum(n_c(1:i)) sum(n_c(1:i))] + tickcentering + 0.5;
             line(ytick_x1, ytick_y, 'color', tickcolor, 'linewidth', tickwidth);
-            line(ytick_x2, ytick_y, 'color', tickcolor, 'linewidth', tickwidth);
+            if ~do_triangle; line(ytick_x2, ytick_y, 'color', tickcolor, 'linewidth', tickwidth); end
             xtick_x = ytick_y;
             xtick_y1 = ytick_x1;
             xtick_y2 = ytick_x2;
-            line(xtick_x, xtick_y1, 'color', tickcolor, 'linewidth', tickwidth);
+            if ~do_triangle; line(xtick_x, xtick_y1, 'color', tickcolor, 'linewidth', tickwidth); end
             line(xtick_x, xtick_y2, 'color', tickcolor, 'linewidth', tickwidth);
             
         end
