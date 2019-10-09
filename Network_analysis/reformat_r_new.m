@@ -33,6 +33,11 @@ function r = reformat_r_new(r, varargin)
 %
 % :Optional Inputs:
 %
+%
+%   **'include_diag':**
+%        This preserves diagonal values when using other options in this
+%        function.
+%
 %   **'flatten':**
 %        This flatten (i.e., vectorize) the input matrix (removing diagonal
 %        values as default)
@@ -91,8 +96,11 @@ function r = reformat_r_new(r, varargin)
 %    8/29/18 : J.J. - add 'upper_triangle' and 'lower_triangle' option
 %    (used for 'vis_network' function, because the input should not be
 %    duplicate matrix)
+%
+%    10/9/19 : J.J. - add 'include_diag' option
 % ..
 
+do_include_diag = false;
 do_flatten = false;
 do_reconstruct = false;
 do_remove_diag = false;
@@ -103,27 +111,23 @@ do_symmetric_sum = false;
 do_fisherz = false;
 do_ones_diag = false;
 do_z2r = false;
-
-% get n
-if size(r,1) == 1 || size(r,2) == 1 
-    n = 1/2+sqrt(max(size(r,1), size(r,2))*2+1/4);
-else
-    if size(r,1) ~= size(r,2)
-        warning('r should be symmetric. Check your input.');
-    end
-    n = size(r,1);
-end
+k = 1;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             % functional commands
+            case {'include_diag'}
+                do_include_diag = true;
+                k = 0;
             case {'flatten'}
                 do_flatten = true;
             case {'reconstruct'}
                 do_reconstruct = true;
             case {'remove_diag'}
                 do_remove_diag = true;
+            case {'one_diag', 'ones_diag'}
+                do_ones_diag = true;
             case {'upper_triangle'}
                 do_upper_triangle = true;
             case {'lower_triangle'}
@@ -136,35 +140,51 @@ for i = 1:length(varargin)
                 do_fisherz = true;
             case {'z2r'}
                 do_z2r = true;
-            case {'one_diag', 'ones_diag'}
-                do_ones_diag = true;
         end
     end
 end
 
+%%
 
-if do_flatten, r = r(triu(true(n,n),1)); end
+% get n
+if size(r,1) == 1 || size(r,2) == 1 
+    n = 1/2+sqrt(max(size(r,1), size(r,2))*2+1/4);
+    if do_include_diag
+        n = n - 1;
+    end
+else
+    if size(r,1) ~= size(r,2)
+        warning('r should be symmetric. Check your input.');
+    end
+    n = size(r,1);
+end
+
+
+if do_flatten, r = r(triu(true(n,n), k)); end
 
 if do_reconstruct
     rr = zeros(n,n);
-    rr(triu(true(n,n),1)) = r;
+    rr(triu(true(n,n), k)) = r;
     r = rr + rr';
+    if do_include_diag
+        r(1:length(r)+1:end) = r(1:length(r)+1:end) ./ 2;
+    end
 end
     
-if do_remove_diag, r(logical(eye(n))) = 0; end
-
-if do_upper_triangle, r = r .* triu(true(n,n),1); end
+if do_remove_diag, r(1:length(r)+1:end) = 0; end
     
-if do_lower_triangle, r = r .* tril(true(n,n),-1); end
+if do_ones_diag, r(1:length(r)+1:end) = 1; end
+
+if do_upper_triangle, r = r .* triu(true(n,n), k); end
+    
+if do_lower_triangle, r = r .* tril(true(n,n), -k); end
 
 if do_symmetric_avg, r = (r + r')./2; end
 
 if do_symmetric_sum, r = (r + r'); end
     
-if do_fisherz, r = .5 * log( (1+r) ./ (1-r)); end
+if do_fisherz, r = .5 * log( (1+r) ./ (1-r) ); end
 
 if do_z2r, r = tanh(r); end
-    
-if do_ones_diag, r(logical(eye(n))) = 1; end
 
 end
