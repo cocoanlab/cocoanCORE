@@ -1,4 +1,4 @@
-function r = reformat_r_new(r, varargin)
+function r_out = reformat_r_new(r, varargin)
 
 % Do some reformatting or calculations on adjacency matrix or correlation 
 % matrix, e.g., flatten, reconstruct, remove diagonal, etc. 
@@ -98,7 +98,10 @@ function r = reformat_r_new(r, varargin)
 %    duplicate matrix)
 %
 %    10/9/19 : J.J. - add 'include_diag' option
+%                   - add 'group_mean' and 'group_sum' option
 % ..
+
+k = 1;
 
 do_include_diag = false;
 do_flatten = false;
@@ -111,7 +114,7 @@ do_symmetric_sum = false;
 do_fisherz = false;
 do_ones_diag = false;
 do_z2r = false;
-k = 1;
+do_group = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -140,6 +143,14 @@ for i = 1:length(varargin)
                 do_fisherz = true;
             case {'z2r'}
                 do_z2r = true;
+            case {'group_mean'}
+                do_group = true;
+                group_fun = @(x) mean(x(:));
+                group_idx = varargin{i+1};
+            case {'group_sum'}
+                do_group = true;
+                group_fun = @(x) sum(x(:));
+                group_idx = varargin{i+1};
         end
     end
 end
@@ -160,31 +171,42 @@ else
 end
 
 
-if do_flatten, r = r(triu(true(n,n), k)); end
+if do_flatten, r_out = r(triu(true(n,n), k)); end
 
 if do_reconstruct
-    rr = zeros(n,n);
-    rr(triu(true(n,n), k)) = r;
-    r = rr + rr';
+    r_out = zeros(n,n);
+    r_out(triu(true(n,n), k)) = r;
+    r_out = r_out + r_out';
     if do_include_diag
-        r(1:length(r)+1:end) = r(1:length(r)+1:end) ./ 2;
+        r_out(1:n+1:end) = r_out(1:n+1:end) ./ 2;
     end
 end
     
-if do_remove_diag, r(1:length(r)+1:end) = 0; end
+if do_remove_diag, r_out = r; r_out(1:n+1:end) = 0; end
     
-if do_ones_diag, r(1:length(r)+1:end) = 1; end
+if do_ones_diag, r_out = r; r_out(1:n+1:end) = 1; end
 
-if do_upper_triangle, r = r .* triu(true(n,n), k); end
+if do_upper_triangle, r_out = r .* triu(true(n,n), k); end
     
-if do_lower_triangle, r = r .* tril(true(n,n), -k); end
+if do_lower_triangle, r_out = r .* tril(true(n,n), -k); end
 
-if do_symmetric_avg, r = (r + r')./2; end
+if do_symmetric_avg, r_out = (r + r')./2; end
 
-if do_symmetric_sum, r = (r + r'); end
+if do_symmetric_sum, r_out = (r + r'); end
     
-if do_fisherz, r = .5 * log( (1+r) ./ (1-r) ); end
+if do_fisherz, r_out = .5 * log( (1+r) ./ (1-r) ); end
 
-if do_z2r, r = tanh(r); end
+if do_z2r, r_out = tanh(r); end
 
+if do_group
+    u_group_idx = unique(group_idx);
+    n_group = numel(u_group_idx);
+    r_out = zeros(n_group,n_group);
+    for i = 1:numel(u_group_idx)
+        for j = i:numel(u_group_idx)
+            r_out(i,j) = group_fun(r(group_idx == u_group_idx(i), group_idx == u_group_idx(j)));
+        end
+    end
+    r_out = r_out + r_out';
+    r_out(1:n_group+1:end) = r_out(1:n_group+1:end) ./ 2;
 end
