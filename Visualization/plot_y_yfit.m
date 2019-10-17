@@ -9,8 +9,10 @@ function out = plot_y_yfit(yval, yfit, varargin)
 
 position = [1   747   218   208];
 
-xlim = [-.1 1.2];
-ylim = [-.1 .4];
+prop = 0.2;
+xlim = [min(min(yval))-abs(min(min(yval)))*prop max(max(yval))+max(max(yval))*prop];
+ylim = [min(min(yfit))-abs(min(min(yfit)))*prop max(max(yfit))+max(max(yfit))*prop];
+
 data_alpha  = 1;
 line_alpha  = 1;
 dotsize = 40;
