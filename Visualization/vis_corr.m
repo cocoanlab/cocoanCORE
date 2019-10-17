@@ -53,6 +53,8 @@ col_map = [0.3686    0.3098    0.6353
     0.8353    0.2431    0.3098
     0.6196    0.0039    0.2588];
 
+col_map = interp1(1:size(col_map,1), col_map, linspace(1, size(col_map,1), 64));
+
 do_display = 1;
 docolorbar = 0;
 dolines_1st = 1;
@@ -87,6 +89,7 @@ tickwidth = 2;
 ticklength = 5;
 tickoffset = 1;
 same_fig = 0;
+no_triangle_line = 0;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -156,6 +159,8 @@ for i = 1:length(varargin)
                 do_display = 0;
             case {'same_fig'}
                 same_fig = 1;
+            case {'no_triangle_line'}
+                no_triangle_line = 1;
         end
     end
 end
@@ -353,7 +358,9 @@ if do_display
     
     if do_triangle
         patch([-1, size(r,1)+2, size(r,1)+2], [-1, -1, size(r,1)+2], 'w', 'edgecolor', 'w');
-        patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', triangle_width);
+        if ~no_triangle_line
+            patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', triangle_width);
+        end
     end
     
     out.h = h;
