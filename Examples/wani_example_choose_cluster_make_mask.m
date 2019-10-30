@@ -23,9 +23,11 @@ end
 
 
 % save
+cloutdat = region2imagevec(clout);
+cloutdat.dat(cloutdat.dat~=0) = ones(sum(cloutdat.dat~=0),1);
 outputdir = '/Volumes/RAID1/labdata/current/Metaanalysis_Anjali/Anjali_MPFC_subcortical_connectivity/data/ROI_masks';
-filename = 'MPFC_mask.img';
-wani_make_mask(outputdir, filename, clout);
+cloutdat.fullpath = fullfile(outputdir, 'MPFC_mask.nii');
+write(cloutdat)
 
 %% make a mask for OFC
 cluster_orthviews(cl, 'unique');
