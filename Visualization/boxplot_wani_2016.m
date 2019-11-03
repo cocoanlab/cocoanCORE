@@ -87,6 +87,7 @@ mdcol = [0.7608 0.3020 0];
 usesamefig = false;
 facealpha = 1;
 doviolin = 0;
+violinalpha = 0;
 dodots = 0;
 dot_size = 40;
 dot_alpha = .4;
@@ -95,6 +96,7 @@ data_dotcolor = [];
 use_onedotcolor = false;
 do_compact = false;
 do_box = true;
+do_boxtrans = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -105,6 +107,7 @@ for i = 1:length(varargin)
                 colud = repmat(colud2, 100, 1);
                 colud3 = flipud(colud2); 
             case {'box_trans'}
+                do_boxtrans = 1;
                 facealpha = varargin{i+1};
             case {'refline'}
                 dorefline = 1;
@@ -114,8 +117,7 @@ for i = 1:length(varargin)
             case {'boxlinewidth'}
                 line_box  = varargin{i+1};
             case {'boxlinecolor'}
-                colud = repmat(flipud(varargin{i+1}), 100, 1);
-                
+               colud = repmat(flipud(varargin{i+1}), 100, 1);
             case {'reflinewidth'}
                 line_ref  = varargin{i+1};
             case {'reflinestyle'}
@@ -154,6 +156,8 @@ for i = 1:length(varargin)
                 mdcol = 'none';
             case {'nobox'}
                 do_box = false;
+            case {'violin_alpha'}
+                violinalpha = varargin{i+1};
         end
     end
 end
@@ -188,7 +192,7 @@ if do_box
     
     for j = 1:2 % just twice
         for i = 1:numel(patchdata.x)
-            patch(patchdata.x{i}, patchdata.y{i}, colud2(i,:), 'EdgeColor', colud2(i,:), 'FaceAlpha', facealpha);
+            hh = patch(patchdata.x{i}, patchdata.y{i}, colud2(i,:), 'EdgeColor', colud2(i,:), 'FaceAlpha', facealpha);
         end
         
         hold on;
@@ -209,9 +213,19 @@ if do_box
             if strcmp(h(i).Tag, 'Box')
                 k = k+1;
                 if numel(boxlinestyle) == 1
-                    set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{1});
+                    % set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{1});
+                    if ~do_boxtrans
+                        set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{1});
+                    else
+                        set(h(i), 'color', 'w', 'linewidth', 0.0001, 'linestyle', boxlinestyle{1});
+                    end
                 else
-                    set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{k});
+                    % set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{k});
+                    if ~do_boxtrans
+                        set(h(i), 'color', colud(k,:), 'linewidth', line_box, 'linestyle', boxlinestyle{1});
+                    else
+                        set(h(i), 'color', 'w', 'linewidth', 0.0001, 'linestyle', boxlinestyle{1});
+                    end
                 end
             end
         end
@@ -244,12 +258,12 @@ if doviolin
 %         violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
 %             'x', 1:numel(x_cell), 'mc', [0.3686    0.3098    0.6353], 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5, 'bw', bw);
         h = violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
-            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5, 'bw', bw);
+            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', violinalpha, 'linewidth', 1.5, 'bw', bw);
     else
 %         violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
 %             'x', 1:numel(x_cell), 'mc', [0.3686    0.3098    0.6353], 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5);
         h = violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
-            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5);
+            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', violinalpha, 'linewidth', 1.5);
     end
     legend off
     
