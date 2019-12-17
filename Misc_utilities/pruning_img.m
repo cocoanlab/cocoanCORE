@@ -1,6 +1,6 @@
 function [dat, r] = pruning_img(stat_img, p, k)
 
-% r = pruning_img(stat_img, p, k)
+% [dat, r] = pruning_img(stat_img, p, k)
 %
 % stat_img: statistical image
 % p: multiple p values [.05 .01 .001]

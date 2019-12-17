@@ -17,7 +17,7 @@ for i=1:V
             pFDR = P(i-1);
         else
             pFDR = P(1);
-            print_error(P, V, q); % Suhwan added (2019.09.06)
+            % print_error(P, V, q); % Suhwan added (2019.09.06)
         end
         break
     end
