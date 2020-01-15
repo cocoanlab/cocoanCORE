@@ -53,7 +53,8 @@ for i = 1:length(varargin)
                 if size(group,1) < size(group,2)
                     group = group';
                 end
-                g_order = 1:numel(unique(group)); % default
+%                 g_order = 1:numel(unique(group)); % default
+                g_order = unique(group); % modified for more general purpose (2020.01.25, J.J.)
             case {'group_color'}
                 gcols = varargin{i+1};
                 gcols_edge = gcols - .2;
