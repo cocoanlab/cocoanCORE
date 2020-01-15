@@ -67,6 +67,33 @@ mask = fmri_data(img, which('gray_matter_mask.img'));
 network_names = {'Visual', 'Somatomotor', 'dAttention', 'vAttention', ...
     'Limbic', 'Frontoparietal', 'Default', 'Thalamus', 'Hipp/Amy', 'Brainstem'};
 
+% Overlaps with large-scale networks with a polar plot
+pattern_data = fmri_data(thresh_img, which('gray_matter_mask.img'));
+
+isdiff = compare_space(pattern_data, mask);
+
+if isdiff == 1 || isdiff == 2 % diff space, not just diff voxels
+    % == 3 is ok, diff non-empty voxels
+    
+    % Both work, but resample_space does not require going back to original
+    % images on disk.
+    %mask = resample_to_image_space(mask, dat);
+    mask = resample_space(mask, pattern_data);
+    
+    % tor added may 1 - removed voxels was not legal otherwise
+    %mask.removed_voxels = mask.removed_voxels(mask.volInfo.wh_inmask);
+    % resample_space is not *always* returning legal sizes for removed
+    % vox? maybe this was updated to be legal
+    
+    if length(mask.removed_voxels) == mask.volInfo.nvox
+        disp('Warning: resample_space returned illegal length for removed voxels. Fixing...');
+        mask.removed_voxels = mask.removed_voxels(mask.volInfo.wh_inmask);
+    end
+    
+end
+
+pattern_thresh = pattern_data.dat;
+
 dat = [mask.dat==1 | mask.dat==8 | mask.dat==15 ...
     mask.dat==2 | mask.dat==9 | mask.dat==16 ...
     mask.dat==3 | mask.dat==10 | mask.dat==17 ...
@@ -77,11 +104,6 @@ dat = [mask.dat==1 | mask.dat==8 | mask.dat==15 ...
     mask.dat>=22 & mask.dat<=35 ...
     mask.dat>=36 & mask.dat<=47 ...
     mask.dat==49];
-
-% Overlaps with large-scale networks with a polar plot
-pattern_data = fmri_data(thresh_img, which('gray_matter_mask.img'));
-
-pattern_thresh = pattern_data.dat;
 
 % calculate posterior probability of observing thresholded regions given each network
 
