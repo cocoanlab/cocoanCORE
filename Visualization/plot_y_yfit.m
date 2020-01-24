@@ -9,9 +9,21 @@ function out = plot_y_yfit(yval, yfit, varargin)
 
 position = [1   747   218   208];
 
+if iscell(yval)
+    if ~any(isrow(yval)-isrow(yval{1}))
+        yv = cell2mat(yval);
+        yf = cell2mat(yfit);
+    else
+        yv = cell2mat(yval');
+        yf = cell2mat(yfit');
+    end
+else
+    yv = yval;
+    yf = yfit;
+end
 prop = 0.2;
-xlim = [min(min(yval))-abs(min(min(yval)))*prop max(max(yval))+max(max(yval))*prop];
-ylim = [min(min(yfit))-abs(min(min(yfit)))*prop max(max(yfit))+max(max(yfit))*prop];
+xlim = [min(min(yv))-abs(min(min(yv)))*prop max(max(yv))+max(max(yv))*prop];
+ylim = [min(min(yf))-abs(min(min(yf)))*prop max(max(yf))+max(max(yf))*prop];
 
 data_alpha  = 1;
 line_alpha  = 1;
