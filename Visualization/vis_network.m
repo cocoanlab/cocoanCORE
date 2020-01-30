@@ -63,6 +63,9 @@ function h = vis_network(W, varargin)
 %        specify which nodes you want to highlight
 %        e.g., 'highlight', [1 1 0 0 0 1 1 0 0 0]
 %
+%   **'label'
+%       Add each node name using 'text' function (ln: 297)
+%       e.g., 'label', {'1','2','3','4','5'}
 %
 % :Outputs:
 %
@@ -83,15 +86,18 @@ function h = vis_network(W, varargin)
 %     0.7451    0.6039    0.2000
 %     0.4275    0.6863    0.2039
 %     0.3373    0.7373    0.5922];
-% 
+% labelname = {'1','2','3','4','5','6','7','8','9','10'}; 
+%
 % h = vis_network(W, 'weighted', 'degree', 'group', grouping, 'groupcolor', g_cols)
+% h = vis_network(W, 'weighted', 'degree', 'group', grouping, 'groupcolor', g_cols,'label',labelname)
 %
 % ..
 %    Programmers' notes:
 %    Created 8/28/18 by wani woo
 %
-%    8/29/18 : J.J. - change to use only upper triangle because the input
-%    should not be duplicate matrix.
+%    08/29/18 : J.J.   - change to use only upper triangle because the input
+%                      should not be duplicate matrix.
+%    01/30/20 : Suhwan - add label option 
 % ..
 %
 
@@ -111,6 +117,7 @@ ln_neg_color = [0.1686    0.5137    0.7294];
 ln_width = 1.5;
 do_arrow = false;
 arrow_len = 10;
+do_label = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -152,6 +159,9 @@ for i = 1:length(varargin)
                 do_arrow = true;
             case {'arrow_length'}
                 arrow_len = varargin{i+1};
+            case {'label'}
+                do_label = 1;
+                labelname = varargin{i+1};
         end
     end
 end
@@ -313,6 +323,11 @@ else
         h.node_xy(~wh_hl,2) = h.node_nohl.YData;
         hold on;
     end
+end
+
+if do_label
+    label_space = 0.1;
+    text(X(:,1)+label_space , X(:,2),labelname);
 end
 
 axis off;
