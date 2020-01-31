@@ -295,6 +295,7 @@ if draw_node_top
     
 end
 
+set(gca, 'xlim', [-1 1], 'ylim', [-1 1]); % [2020. 01. 31] added by J.J.: sometimes xlim starts from -2.
 set(gcf, 'color', 'w', 'position', [1   444   562   511]);
 axis off
 
