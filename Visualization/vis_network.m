@@ -118,6 +118,7 @@ ln_width = 1.5;
 do_arrow = false;
 arrow_len = 10;
 do_label = false;
+node_edge_color = 'w';
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -162,6 +163,8 @@ for i = 1:length(varargin)
             case {'label'}
                 do_label = 1;
                 labelname = varargin{i+1};
+            case {'node_edge_color'}
+                node_edge_color = varargin{i+1};
         end
     end
 end
@@ -301,24 +304,24 @@ h.node_xy = NaN(size(X,1),2);
 
 if dogroup
     for g_i = unique(grouping)'
-        h.node_hl{g_i} = scatter(X(wh_hl & grouping==g_i,1), X(wh_hl & grouping==g_i,2), d(wh_hl & grouping==g_i), 'filled', 'MarkerFaceColor', g_cols(g_i,:), 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
+        h.node_hl{g_i} = scatter(X(wh_hl & grouping==g_i,1), X(wh_hl & grouping==g_i,2), d(wh_hl & grouping==g_i), 'filled', 'MarkerFaceColor', g_cols(g_i,:), 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
         h.node_xy(wh_hl & grouping==g_i,1) = h.node_hl{g_i}.XData;
         h.node_xy(wh_hl & grouping==g_i,2) = h.node_hl{g_i}.YData;
         hold on;
     end
     if any(wh_hl == 0)
-        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
+        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
         h.node_xy(~wh_hl,1) = h.node_nohl.XData;
         h.node_xy(~wh_hl,2) = h.node_nohl.YData;
         hold on;
     end
 else
-    h.node_hl = scatter(X(wh_hl,1), X(wh_hl,2), d(wh_hl), 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
+    h.node_hl = scatter(X(wh_hl,1), X(wh_hl,2), d(wh_hl), 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
     h.node_xy(wh_hl,1) = h.node_hl.XData;
     h.node_xy(wh_hl,2) = h.node_hl.YData;
     hold on;
     if any(wh_hl == 0)
-        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', 'w' , 'LineWidth', 1.5);
+        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
         h.node_xy(~wh_hl,1) = h.node_nohl.XData;
         h.node_xy(~wh_hl,2) = h.node_nohl.YData;
         hold on;
