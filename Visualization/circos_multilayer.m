@@ -18,6 +18,11 @@ function circos_multilayer(A, varargin)
 %   - group              group assignment of nodes. ex) [1,1,1,2,2,2,3,4], ...
 %   - group_color        RGB color values for each group. [groups X 3]
 %   - rotate             rotate circos plot clockwise. (degree)
+%   - length_ratio       relative ratio between [length of region patch,
+%                        interval between region path, interval between
+%                        groups]. (default: [10,1,3])
+%   - patch_edge_alpha   alpha value for edge of region patch. (default: 0.5)
+%   - patch_edge_color   color value for edge of region patch. (default: [0.5 0.5 0.5])
 %   - add_layer          add additional layers, specified by following key-value pairs.
 %                        (e.g., 'add_layer', {'layer', deg_cent, 'color', deg_cent_cols})
 %                        the values followed by 'layer' will be presented
@@ -105,8 +110,11 @@ region_names_size = 6;
 laterality = false;
 radiological = false;
 sep_pos_neg = false;
-dot_node = 10;
-dot_interval = 3;
+length_region = 10;
+interval_region = 1;
+interval_group = 3;
+patch_edge_alpha = 0.5;
+patch_edge_color = [0.5 0.5 0.5];
 patch_size_coef = 0.05;
 layer = {};
 alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
@@ -142,6 +150,14 @@ for i = 1:length(varargin)
                 gcols = varargin{i+1};
             case {'rotate'}
                 rotate_angle = varargin{i+1};
+            case {'length_ratio'}
+                length_region = varargin{i+1}(1);
+                interval_region = varargin{i+1}(2);
+                interval_group = varargin{i+1}(3);
+            case {'patch_edge_alpha'}
+                patch_edge_alpha = varargin{i+1};
+            case {'patch_edge_color'}
+                patch_edge_color = varargin{i+1};
             case {'add_layer'}
                 add_layer = varargin{i+1};
             case {'region_names'}
@@ -204,11 +220,11 @@ end
 
 N_node = size(A, 1);
 N_group = numel(unique(group));
-unit_theta = (2*pi) / (N_node * dot_node + N_group * dot_interval);
+unit_theta = (2*pi) / (N_node * (length_region + interval_region) + N_group * interval_group);
 
 [group_val, group_idx] = sort(group, 'ascend');
 if laterality
-    for i = (before_N_group+1):before_N_group*2+1
+    for i = (before_N_group+1):(before_N_group*2+1)
         wh_mirror = group_val == i;
         group_val(wh_mirror) = flipud(group_val(wh_mirror));
         group_idx(wh_mirror) = flipud(group_idx(wh_mirror));
@@ -225,14 +241,13 @@ end
     
 wh_interval = find(diff([group_val]) == 1); % find where group index differs = find where interval is located
 
-j = 0:(dot_node-1);
-% j = [0:(dot_node-1)] + dot_interval;
+j = 0:(length_region-interval_region);
 for i = 1:N_node
     
     range_theta{i} = -(unit_theta * j) + pi/2 + deg2rad(rotate_angle);
-    j = j + dot_node;
+    j = j + length_region;
     if ismember(i, wh_interval)
-        j = j + dot_interval; % interval
+        j = j + interval_group; % interval
     end
     
 end
@@ -256,7 +271,7 @@ for i = 1:N_node
         end
         patch_vec = [bottom_line; top_line];
         patch_color = layer_color{j}(sum(layer{j}(i) >= linspace(0, 1+eps, size(layer_color{j},1) + 1)), :);
-        patch([patch_vec(:,1)], [patch_vec(:,2)], patch_color, 'linewidth', 0.5, 'edgecolor', [.5 .5 .5], 'edgealpha', .5);
+        patch([patch_vec(:,1)], [patch_vec(:,2)], patch_color, 'linewidth', 0.5, 'edgecolor', patch_edge_color, 'edgealpha', patch_edge_alpha);
         
     end
     
@@ -273,7 +288,7 @@ for i = 1:N_node
     end
     patch_vec = [bottom_line; top_line];
     patch_color = gcols(group_val(i),:);
-    patch([patch_vec(:,1)], [patch_vec(:,2)], patch_color, 'linewidth', 0.5, 'edgecolor', [.5 .5 .5], 'edgealpha', .5);
+    patch([patch_vec(:,1)], [patch_vec(:,2)], patch_color, 'linewidth', 0.5, 'edgecolor', patch_edge_color, 'edgealpha', patch_edge_alpha);
     
     %% ROI text
     if do_region_label
