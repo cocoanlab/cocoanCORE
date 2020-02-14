@@ -38,13 +38,14 @@ function circos_multilayer(A, varargin)
 %   - laterality         laterality index for circos plot (usually for cortex)
 %                        -1: Left, 1: Right, 0: No laterality
 %   - radiological       laterality display in radiological convention. (default: neurological)
-%   - sep_pos_neg        separate positive and negative connections.
-%   - alpha_fun          user-defined function for setting alpha value of
-%                        connections corresponding to connectivity values.
-%                        (default: @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;)
-%   - width_fun          user-defined function for setting alpha value of
-%                        connections corresponding to connectivity values.
-%                        (default: @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;)
+%   - conn_color         color value of connections. [number of connections X 3]
+%                        (default: [255,0,0]./255 for positive w, [10,150,255]./255 for negative w)
+%   - conn_alpha         alpha value of connections. [number of connections X 1]
+%                        (default: ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5 )
+%   - conn_width         width value of connections. [number of connections X 1]
+%                        (default: (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25 )
+%   - conn_order         order of drawing connections. [number of connections X 1]
+%                        (default: order from find() function )
 %
 %
 % :Output:
@@ -80,7 +81,7 @@ function circos_multilayer(A, varargin)
 %   circos_multilayer(A, 'group', A_group, 'group_color', A_group_cols, ...
 %       'add_layer', {'layer', A_pos_deg_cent, 'color', A_pos_deg_cent_cols, ...
 %       'layer', A_neg_deg_cent, 'color', A_neg_deg_cent_cols}, ...
-%       'region_names', A_names, 'laterality', A_lat, 'sep_pos_neg');
+%       'region_names', A_names, 'laterality', A_lat);
 %   
 % ..
 %     Author and copyright information:
@@ -104,8 +105,6 @@ function circos_multilayer(A, varargin)
 rotate_angle = 0;
 add_layer = {};
 do_region_label = false;
-pos_edge_color = [255,0,0]./255;
-neg_edge_color = [10,150,255]./255;
 region_names_size = 6;
 laterality = false;
 radiological = false;
@@ -117,10 +116,6 @@ patch_edge_alpha = 0.5;
 patch_edge_color = [0.5 0.5 0.5];
 patch_size_coef = 0.05;
 layer = {};
-alpha_fun = @(x) (((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))))).^4.5;
-width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
-% alpha_fun = @(x) (x - min(x)) ./ (max(x) - min(x)) * 0.9 + 0.1;
-% width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2 + 1;
 
 default_col_names = { ...
     'degree', ...
@@ -170,12 +165,17 @@ for i = 1:length(varargin)
                 lat_index = varargin{i+1};
             case {'radiological'}
                 radiological = true;
-            case {'sep_pos_neg'}
-                sep_pos_neg = true;
-            case {'alpha_fun'}
-                alpha_fun = varargin{i+1};
-            case {'width_fun'}
-                width_fun = varargin{i+1};
+            case {'conn_color'}
+                conn_color = varargin{i+1};
+            case {'conn_alpha'}
+                conn_alpha = varargin{i+1};
+            case {'conn_width'}
+                conn_width = varargin{i+1};
+            case {'conn_order'}
+                conn_order = varargin{i+1};
+                if iscolumn(conn_order)
+                    conn_order = conn_order';
+                end
         end
     end
 end
@@ -230,7 +230,15 @@ if laterality
         group_idx(wh_mirror) = flipud(group_idx(wh_mirror));
     end
 end
+
+orig_to_new_idx_mat = double(triu(logical(A),1));
+orig_to_new_idx_mat(orig_to_new_idx_mat ~= 0) = 1:sum(sum(orig_to_new_idx_mat ~= 0));
+orig_to_new_idx_mat = orig_to_new_idx_mat + orig_to_new_idx_mat';
+orig_to_new_idx_mat = orig_to_new_idx_mat(group_idx, group_idx);
+[~, ~, orig_to_new_idx] = find(triu(orig_to_new_idx_mat,1));
+
 A = A(group_idx, group_idx);
+
 
 for i = 1:numel(layer)
     layer{i} = layer{i}(group_idx);
@@ -309,10 +317,38 @@ end
 
 [row,col,w] = find(triu(A,1));
 
-alpha_w = alpha_fun(w);
-width_w = width_fun(w);
+if ~exist('conn_color', 'var')
+    pos_edge_color = [255,0,0]./255;
+    neg_edge_color = [10,150,255]./255;
+    conn_color = zeros(numel(w), 3);
+    conn_color(w>0, :) = repmat(pos_edge_color, sum(w>0), 1);
+    conn_color(w<0, :) = repmat(neg_edge_color, sum(w<0), 1);
+else
+    conn_color = conn_color(orig_to_new_idx, :);
+end
 
-for i = 1:numel(w)
+if ~exist('conn_alpha', 'var')
+    alpha_fun = @(x) ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5;
+    conn_alpha = alpha_fun(w);
+else
+    conn_alpha = conn_alpha(orig_to_new_idx);
+end
+
+if ~exist('conn_width', 'var')
+    width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
+    conn_width = width_fun(w);
+else
+    conn_width = conn_width(orig_to_new_idx);
+end
+
+if ~exist('conn_order', 'var')
+    conn_order = 1:numel(w);
+else
+    conn_order = conn_order(orig_to_new_idx);
+end
+
+
+for i = conn_order
     
     u = [cos(mean(range_theta{row(i)})), sin(mean(range_theta{row(i)}))];
     v = [cos(mean(range_theta{col(i)})), sin(mean(range_theta{col(i)}))];
@@ -331,26 +367,15 @@ for i = 1:numel(w)
         theta = linspace(thetaLim(1),thetaLim(2)).';
     end
     
-    if ~sep_pos_neg
-        edge_color = pos_edge_color;
-        line(...
-            r*cos(theta)+x0,...
-            r*sin(theta)+y0,...
-            'LineWidth', width_w(i),...
-            'PickableParts','none', 'color', [edge_color alpha_w(i)]);
-    elseif sep_pos_neg
-        if w(i) >= 0; edge_color = pos_edge_color;
-        elseif w(i) < 0; edge_color = neg_edge_color;
-        end
-        line(...
-            r*cos(theta)+x0,...
-            r*sin(theta)+y0,...
-            'LineWidth', width_w(i),...
-            'PickableParts','none', 'color', [edge_color alpha_w(i)]);
-    end
+    line(...
+        r*cos(theta)+x0,...
+        r*sin(theta)+y0,...
+        'LineWidth', conn_width(i),...
+        'PickableParts','none', 'color', [conn_color(i,:) conn_alpha(i)]);
 
 end
 
 axis off;
 set(gcf, 'color', 'w');
+
 end
