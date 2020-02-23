@@ -46,9 +46,14 @@ n_col = size(cols, 1);
 if n_col > 255
     cols = interp1(1:n_col, cols, linspace(1, n_col, 256));
     n_col = 256;
+elseif n_col == 1
+    cols = repmat(cols, 2, 1);
+    n_col = 2;
 end
-if isfloat(cols)
+
+if isfloat(cols) && max(cols(:)) <= 1 % given that color was specified as a scale of 0-to-1
     cols = round(cols .* 255);
+    cols(cols > 255) = 255;
 end
 nodes = round(linspace(0, 255, n_col));
 
