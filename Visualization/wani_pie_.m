@@ -91,11 +91,12 @@ for i = 1:length(varargin)
     end
 end
 
+wh_pos = find(X > 0);
 h = pie(X);
 set(gcf, 'color', 'w', 'position', [360   393   389   305]);
 
-for i = 1:sum(X>0)
-    set(h(2*i-1), 'facecolor', cols(i,:), 'edgecolor', 'none');
+for i = 1:numel(wh_pos)
+    set(h(2*i-1), 'facecolor', cols(wh_pos(i),:), 'edgecolor', 'none');
     hold on;
     if dotext
         set(h(2*i), 'fontSize', fs);
