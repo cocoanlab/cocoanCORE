@@ -94,7 +94,7 @@ end
 h = pie(X);
 set(gcf, 'color', 'w', 'position', [360   393   389   305]);
 
-for i = 1:numel(X)
+for i = 1:sum(X>0)
     set(h(2*i-1), 'facecolor', cols(i,:), 'edgecolor', 'none');
     hold on;
     if dotext
