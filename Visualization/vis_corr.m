@@ -134,6 +134,11 @@ for i = 1:length(varargin)
                 dogrouptick = 1;
             case {'group_tickstyle'}
                 tickstyle = varargin{i+1};
+                if strcmp(tickstyle, 'center')
+                    tickcentering = -0.5;
+                elseif strcmp(tickstyle, 'edge')
+                    tickcentering = 0;
+                end
             case {'group_tickwidth'}
                 tickwidth = varargin{i+1};
             case {'group_ticklength'}
@@ -301,31 +306,29 @@ if do_display
     end
     
     if dogrouptick
-        n_c = histc(sorted_group, unique(sorted_group));
-        if display_group_mean || display_group_sum
-            n_c= ones(size(n_c));
+        if ~display_group_mean && ~display_group_sum
+            n_c = histc(sorted_group, unique(sorted_group));
+        else
+            n_c = ones(size(n_c));
         end
-        if strcmp(tickstyle, 'center')
-            tickcentering = -0.5;
-        elseif strcmp(tickstyle, 'edge')
-            tickcentering = 0;
-        end
+        
         set(gca, 'Clipping', 'off');
         
         for i = 1:numel(n_c)
             if i == numel(n_c) && strcmp(tickstyle, 'edge')
                 break;
             end
-            ytick_x1 = [0 -ticklength] - tickoffset + 0.5;
-            ytick_x2 = [sum(n_c) sum(n_c)+ticklength] + tickoffset + 0.5;
-            ytick_y = [sum(n_c(1:i)) sum(n_c(1:i))] + tickcentering + 0.5;
+            tick_base = [0 ticklength] + tickoffset;
+            ytick_x1 = -tick_base + 0.5;
+            ytick_x2 = tick_base + sum(n_c) +  0.5;
+            ytick_y = repmat(sum(n_c(1:i)), 1, 2) + tickcentering + 0.5;
             line(ytick_x1, ytick_y, 'color', tickcolor, 'linewidth', tickwidth);
             if ~do_triangle; line(ytick_x2, ytick_y, 'color', tickcolor, 'linewidth', tickwidth); end
             xtick_x = ytick_y;
-            xtick_y1 = ytick_x1;
-            xtick_y2 = ytick_x2;
-            if ~do_triangle; line(xtick_x, xtick_y1, 'color', tickcolor, 'linewidth', tickwidth); end
-            line(xtick_x, xtick_y2, 'color', tickcolor, 'linewidth', tickwidth);
+            xtick_y1 = ytick_x2;
+            xtick_y2 = ytick_x1;
+            line(xtick_x, xtick_y1, 'color', tickcolor, 'linewidth', tickwidth);
+            if ~do_triangle; line(xtick_x, xtick_y2, 'color', tickcolor, 'linewidth', tickwidth); end
             
         end
     end
@@ -348,11 +351,33 @@ if do_display
     
     if display_group_color
         if ~display_group_mean && ~display_group_sum
-            warning('The ''display_group_color'' option is recommended using with ''display_group_mean'' or ''display_group_sum'' options');
-        end
-        for i = 1:size(group_color,1)
-            scatter(-.5, i, 1000, group_color(i,:), 'filled');
-            scatter(i, size(group_color,1)+1.5, 1000, group_color(i,:), 'filled');
+            n_c = histc(sorted_group, unique(sorted_group));
+            n_c = [0; n_c];
+            set(gca, 'Clipping', 'off');
+            for i = 1:(numel(n_c)-1)
+                line_base = (ticklength + tickoffset) * 2;
+                yline_x1 = repmat(-line_base + 0.5, 1, 2);
+                yline_x2 = repmat(line_base + sum(n_c) + 0.5, 1, 2);
+                if i == 1
+                    yline_y = [sum(n_c(1:i)) sum(n_c(1:i+1))-1] + 0.5;
+                elseif i == numel(n_c)-1
+                    yline_y = [sum(n_c(1:i))+1 sum(n_c(1:i+1))] + 0.5;
+                else
+                    yline_y = [sum(n_c(1:i))+1 sum(n_c(1:i+1))-1] + 0.5;
+                end
+                line(yline_x1, yline_y, 'color', group_color(i,:), 'linewidth', 4);
+                if ~do_triangle; line(yline_x2, yline_y, 'color', group_color(i,:), 'linewidth', 4); end
+                xline_x = yline_y;
+                xline_y1 = yline_x2;
+                xline_y2 = yline_x1;
+                line(xline_x, xline_y1, 'color', group_color(i,:), 'linewidth', 4);
+                if ~do_triangle; line(xline_x, xline_y2, 'color', group_color(i,:), 'linewidth', 4); end
+            end
+        else
+            for i = 1:size(group_color,1)
+                scatter(-.5, i, 500, group_color(i,:), 'filled');
+                scatter(i, size(group_color,1)+1.5, 500, group_color(i,:), 'filled');
+            end
         end
     end
     
@@ -369,6 +394,12 @@ if do_display
 end
 out.r = r(idx,idx);
 out.r_descript = r_descript;
+
+if docolorbar
+    set(gcf, 'position', [680   558   487   420]);
+else
+    set(gcf, 'position', [680   558   442   420]);
+end
 
 
 end
