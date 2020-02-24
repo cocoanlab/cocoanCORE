@@ -19,6 +19,8 @@ function h = wani_pie(X, varargin)
 % 'outline'
 % 'outlinecol'
 % 'outlinewidth'
+% 'sort'       counter-clockwise display of each portion of pie
+%              in order of values of elements
 %
 % Outputs:
 % -------------------------------------------------------------------------
@@ -66,6 +68,7 @@ dohole = 0;
 doout = 0;
 outlinecol = [0 0 0];
 outlinewidth = 1.2;
+dosort = 0;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -87,10 +90,17 @@ for i = 1:length(varargin)
                 outlinecol = varargin{i+1};
             case {'outlinewidth'}
                 outlinewidth = varargin{i+1};
+            case {'sort'}
+                dosort = 1;
         end
     end
 end
 
+if dosort
+    [X, sort_idx] = sort(X, 'descend');
+    cols = cols(sort_idx, :);
+end
+    
 wh_pos = find(X > 0);
 h = pie(X);
 set(gcf, 'color', 'w', 'position', [360   393   389   305]);
