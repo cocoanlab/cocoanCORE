@@ -396,9 +396,9 @@ out.r = r(idx,idx);
 out.r_descript = r_descript;
 
 if docolorbar
-    set(gcf, 'position', [680   558   487   420]);
+    set(gcf, 'position', [680   558   475   410]);
 else
-    set(gcf, 'position', [680   558   442   420]);
+    set(gcf, 'position', [680   558   431   410]);
 end
 
 
