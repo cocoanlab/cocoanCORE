@@ -210,18 +210,27 @@ if do_surface && ~do_all
     
     axes('Position', axes_positions{2});
     out = draw_surface(r, out, 'right');
-    surface_light(gca);
+    if strcmp(surface_style,'veryinflated')
+        surface_light(gca);
+    else
+        camlight(-90,-20); axis vis3d;
+    end
     view(90, 0);
     
     if do_medial_surface 
         axes('Position', axes_positions{3});
         out = draw_surface(r, out, 'left');
+        %surface_light(gca);
         camlight(-90,-20); axis vis3d;
         view(90, 0);
         
         axes('Position', axes_positions{4});
         out = draw_surface(r, out, 'right');
-        camlight(-90,-20); axis vis3d;
+        if strcmp(surface_style,'veryinflated')
+            camlight(-90,-20); axis vis3d;
+        else
+            surface_light(gca);
+        end        
         view(-90, 0);
     end
     
