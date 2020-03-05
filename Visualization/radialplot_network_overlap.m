@@ -132,7 +132,8 @@ network_label(contains(lower(network_names), lower(omit))) = [];
 if ~dolabel
     network_label = repmat({''}, 1, numel(network_label)); 
 end
-
+create_figure('radialplot_network_overlap');%  set(gcf, 'color', 'w');
 [h.line, h.fill, h.ang] = tor_polar_plot({overlap_posneg(:,do_posneg).*100}, colors(do_posneg), {network_label}, 'nonumbers');
+
 
 end
