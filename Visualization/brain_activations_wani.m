@@ -441,7 +441,7 @@ for i = 1:length(vars)
     end
 end
 
-o2 = fmridisplay;
+o2 = fmridisplay('overlay',which('keuken_2014_enhanced_for_underlay.img'));
 
 if ~do_all
     
