@@ -19,11 +19,12 @@ function out = plot_specificity_box(y1, y2, varargin)
 %
 % :Optional Input:
 % :: 
-%   - 'colors', 'color'  Two colors for comparison. The first row indicates
-%                        the color if a sample from y1 is grater than y2,
+%   - 'colors', 'color'  [2 x 3] matrix for indiciating two line colors.
+%                        The first row indicates the color if a sample from
+%                        y1 is grater than y2,
 %                        and the second row indicicates the color if a
 %                        sample from y2 is grater than y1.
-%                        (default: first row is red, second row is yellow)
+%                        (default: first row is red, second row is blue)
 %
 %
 % :Output:
