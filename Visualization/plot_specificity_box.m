@@ -19,8 +19,8 @@ function out = plot_specificity_box(y1, y2, varargin)
 %
 % :Optional Input:
 % :: 
-%   - 'colors', 'color'  [2 x 3] matrix for indiciating two edge colors of
-%                        violin plot y1 and y2.
+%   - 'colors', 'color'  [2 x 3] matrix for indiciating two colors of
+%                        violin plot y1 (first row) and y2 (second row).
 %                        (default: first row is red, second row is yellow)
 %
 %
@@ -54,15 +54,9 @@ function out = plot_specificity_box(y1, y2, varargin)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-basedir = '/Volumes/habenula/hbmnas/projects/CAPS_project';
-
-xlim = [-.1 1.2];
-ylim = [-.1 .4];
 
 cols = [0.8353    0.2431    0.3098
     0.9922    0.6824    0.3804];
-
-savefig = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
