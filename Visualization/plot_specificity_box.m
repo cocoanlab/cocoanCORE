@@ -1,4 +1,62 @@
-function out = plot_specificity_box(yfit1, yfit2, varargin)
+function out = plot_specificity_box(y1, y2, varargin)
+
+% This function draws two violin plots and multiple lines for comparing two
+% groups of same sample size. Each line connects two dependent samples, and
+% color of the line indicates which sample is greater than the other.
+% 
+%
+% :Usage:
+% ::
+%     plot_specificity_box(y1, y2, varargin)
+%
+%
+% :Input:
+% ::
+%   - y1                 The first group to be compared
+%   - y2                 The second group to be compared
+%                        (N.B. y1 and y2 have same dimensions)
+%
+%
+% :Optional Input:
+% :: 
+%   - 'colors', 'color'  Two colors for comparison. The first row indicates
+%                        the color if a sample from y1 is grater than y2,
+%                        and the second row indicicates the color if a
+%                        sample from y2 is grater than y1.
+%                        (default: first row is red, second row is yellow)
+%
+%
+% :Output:
+% ::   
+%
+%
+% :Example:
+% ::
+%   y1 = randi(100, 20, 1);
+%   y2 = randi(100, 20, 1);
+%   out = plot_specificity_box(y1, y2);
+%
+%   
+% ..
+%     Author and copyright information:
+%
+%     Copyright (C) Mar 2020  Choong-Wan Woo & Jae-Joong Lee
+%
+%     This program is free software: you can redistribute it and/or modify
+%     it under the terms of the GNU General Public License as published by
+%     the Free Software Foundation, either version 3 of the License, or
+%     (at your option) any later version.
+%
+%     This program is distributed in the hope that it will be useful,
+%     but WITHOUT ANY WARRANTY; without even the implied warranty of
+%     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%     GNU General Public License for more details.
+%
+%     You should have received a copy of the GNU General Public License
+%     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+% ..
+
+basedir = '/Volumes/habenula/hbmnas/projects/CAPS_project';
 
 xlim = [-.1 1.2];
 ylim = [-.1 .4];
@@ -12,10 +70,6 @@ for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             % functional commands
-            case {'xlim'}
-                xlim = varargin{i+1};
-            case {'ylim'}
-                ylim = varargin{i+1};
             case {'colors', 'color'}
                 cols = varargin{i+1};
         end
@@ -24,7 +78,7 @@ end
 
 create_figure('plot');
 
-data = [yfit1 yfit2];
+data = [y1 y2];
 
 close all;
 boxplot_wani_2016(data, 'color', cols, 'linewidth', 2, 'boxlinewidth', 1, 'mediancolor', 'k', 'violin');
