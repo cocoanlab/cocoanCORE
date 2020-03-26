@@ -110,8 +110,8 @@ laterality = false;
 radiological = false;
 sep_pos_neg = false;
 length_region = 10;
-interval_region = 1;
-interval_group = 3;
+interval_region = 0;
+interval_group = 10;
 patch_edge_alpha = 0.5;
 patch_edge_color = [0.5 0.5 0.5];
 patch_size_coef = 0.05;
@@ -119,7 +119,8 @@ layer = {};
 
 default_col_names = { ...
     'degree', ...
-    'lesion', ...
+    'lesion1', ...
+    'lesion2', ...
     'clcoef', ...
     };
 default_col = { ...
@@ -129,6 +130,15 @@ default_col = { ...
     240,59,32
     189,0,38]./255, ...
     repmat(linspace(1, 0, 10)', 1, 3), ...
+    [247,252,253
+    224,236,244
+    191,211,230
+    158,188,218
+    140,150,198
+    140,107,177
+    136,65,157
+    129,15,124
+    77,0,75]./255, ...
     [237,248,251
     178,226,226
     102,194,164
@@ -185,16 +195,20 @@ for i = 1:length(add_layer)
     if ischar(add_layer{i})
         switch add_layer{i}
             case {'layer'}
-                j = j + 1;
-                layer{j} = add_layer{i+1};
-                if max(layer{j}) > 1 || min(layer{j}) < 0
-                    error('Values of each layer should be between 0 and 1.');
+                if ~isempty(add_layer{i+1})
+                    j = j + 1;
+                    layer{j} = add_layer{i+1};
+                    if max(layer{j}) > 1 || min(layer{j}) < 0
+                        error('Values of each layer should be between 0 and 1.');
+                    end
                 end
             case {'color'}
-                if ~ischar(add_layer{i+1})
-                    layer_color{j} = add_layer{i+1};
-                elseif ischar(add_layer{i+1})
-                    layer_color{j} = default_col{contains(default_col_names, add_layer{i+1})};
+                if ~isempty(add_layer{i-1})
+                    if ~ischar(add_layer{i+1})
+                        layer_color{j} = add_layer{i+1};
+                    elseif ischar(add_layer{i+1})
+                        layer_color{j} = default_col{contains(default_col_names, add_layer{i+1})};
+                    end
                 end
         end
     end
