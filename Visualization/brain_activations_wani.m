@@ -135,10 +135,12 @@ global surface_style color depth poscm negcm do_color do_all all_style
 surface_style = 'veryinflated';
 do_color = false;
 depth = 3;
-do_all = false;
 do_montage = true;
 do_surface = true;
 do_medial_surface = false;
+% do_all = false;
+do_all = true;
+all_style = 'v1';
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
