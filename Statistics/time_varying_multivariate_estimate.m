@@ -33,7 +33,7 @@ function y = time_varying_multivariate_estimate(meth,data,varargin)
 %    y =  time_varying_multivariate_estimate('gaussian',data,20);
 %    
 %    % generate random data
-%    data{1} = rand(2000,100); % time x voxel
+%    data{1} = rand(2000,200); % time x voxel
 %    data{2} = rand(2000,100);
 %
 %    y = time_varying_multivariate_estimate('gaussian',data, 20)
@@ -100,14 +100,14 @@ for i = 1:numel(data)
 end
 
 nobs = unique(nobs_all);
-ncols = unique(ncols_all);
-
-if numel(nobs)>1 || numel(ncols)>1 
-    error('Check the size of the data. They should have the same numbers of rows and columns');
+% ncols = unique(ncols_all);
+% 
+if numel(nobs)>1
+    error('Check the size of the data. They should have the same numbers of observations');
 end
 
 % replicate kernel for each column
-kern = repmat(kern,1,ncols);
+% kern = repmat(kern,1,ncols);
 
 if nobs < nshift, error('Not enough observations to support kernel.'); end
 
@@ -137,11 +137,11 @@ for i = [(nshift+1):stepby:(nobs + nshift) (nobs + nshift)]
     for j = 1:numel(data)
         dati{j} = data{j}(i - nshift : i + nshift,:);
         
-        if center_local_data
-            dati{j} = scale(dati{j},1) .* kern;   % center and multiply by kern so data taper towards mean
-        else
-            dati{j} = dati{j} .* kern;
-        end
+%         if center_local_data
+%             dati{j} = scale(dati{j},1) .* repmat(kern,1,ncols_all(j));   % center and multiply by kern so data taper towards mean
+%         else
+        dati{j} = dati{j} .* repmat(kern,1,ncols_all(j));
+%         end
         
     end
     
