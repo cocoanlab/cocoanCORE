@@ -160,10 +160,12 @@ for i = 1:length(varargin)
                 depth = varargin{i+1};
             case {'surface_only'}
                 do_montage = false;
+                do_all = false; 
             case {'surface_all'}
                 do_medial_surface = true;
             case {'montage_only'}
                 do_surface = false;
+                do_all = false; 
             case {'all'}
                 do_all = true;
                 all_style = 'v1';
