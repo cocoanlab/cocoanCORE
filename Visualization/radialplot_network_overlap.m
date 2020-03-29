@@ -37,6 +37,8 @@ dolabel = true;
 omit = 'asdlkjfldkj';
 do_long = false;
 colors = {[255 195 2]./255, [0 198 255]./255}; % pos neg
+do_posneg = true;
+do_normalize= false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -50,8 +52,14 @@ for i = 1:length(varargin)
                 do_long = true;
             case {'color', 'colors'}
                 colors = varargin{i+1};
+            case {'normalize'}
+                do_normalize= true;
         end
     end
+end
+
+if numel(thresh_img)>1
+    do_posneg = false;
 end
 
 img = which('rBucknerlab_7clusters_SPMAnat_Other_combined.img');
@@ -107,14 +115,20 @@ dat = [mask.dat==1 | mask.dat==8 | mask.dat==15 ...
 
 % calculate posterior probability of observing thresholded regions given each network
 
-do_posneg = [any(pattern_thresh>0) any(pattern_thresh<0)];
-
-overlap_posneg = zeros(numel(network_names), 2);
-for i = find(do_posneg)
-    if i == 1
-        overlap_posneg(:,i) = canlab_pattern_similarity(dat, pattern_thresh>0, 'posterior_overlap', 'ignore_missing');
-    else
-        overlap_posneg(:,i) = canlab_pattern_similarity(dat, pattern_thresh<0, 'posterior_overlap', 'ignore_missing');
+if do_posneg
+    any_posneg = [any(pattern_thresh>0) any(pattern_thresh<0)];
+    
+    overlap_posneg = zeros(numel(network_names), 2);
+    for i = find(any_posneg)
+        if i == 1
+            overlap_posneg(:,i) = canlab_pattern_similarity(dat, pattern_thresh>0, 'posterior_overlap', 'ignore_missing');
+        else
+            overlap_posneg(:,i) = canlab_pattern_similarity(dat, pattern_thresh<0, 'posterior_overlap', 'ignore_missing');
+        end
+    end
+else
+    for i = 1:numel(thresh_img)
+        overlap_posneg(:,i) = canlab_pattern_similarity(dat, pattern_thresh(:,i)~=0, 'posterior_overlap', 'ignore_missing');
     end
 end
 
@@ -132,8 +146,20 @@ network_label(contains(lower(network_names), lower(omit))) = [];
 if ~dolabel
     network_label = repmat({''}, 1, numel(network_label)); 
 end
-create_figure('radialplot_network_overlap');%  set(gcf, 'color', 'w');
-[h.line, h.fill, h.ang] = tor_polar_plot({overlap_posneg(:,do_posneg).*100}, colors(do_posneg), {network_label}, 'nonumbers');
 
+create_figure('radialplot_network_overlap');%  set(gcf, 'color', 'w');
+if do_posneg
+    [h.line, h.fill, h.ang] = tor_polar_plot({overlap_posneg(:,do_posneg).*100}, colors(do_posneg), {network_label}, 'nonumbers');
+else
+    if ismatrix(colors)
+        colors_org = colors; clear colors;
+        for i = 1:size(colors_org,1), colors{i} = colors_org(i,:); end
+    end
+    
+    if do_normalize
+        overlap_posneg = overlap_posneg./repmat(sum(overlap_posneg), size(overlap_posneg,1), 1);
+    end
+    [h.line, h.fill, h.ang] = tor_polar_plot({overlap_posneg.*100}, colors, {network_label}, 'nonumbers');
+end
 
 end
