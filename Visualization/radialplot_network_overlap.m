@@ -11,6 +11,9 @@ function h = radialplot_network_overlap(thresh_img, varargin)
 %
 %   **thresh_img:**
 %        thresholded image files (e.g., thresh_img = 'thresh_p_05.nii';)
+%        You can visualize one image for activation and deactivation maps.
+%        You can also visualize multiple images with distinct colors. In this case,
+%           this function calculates the overlaps with non-zero voxels. 
 %
 %
 % :Optional Inputs: Enter keyword followed by variable with values
@@ -23,14 +26,17 @@ function h = radialplot_network_overlap(thresh_img, varargin)
 %        when you want to exclude visual: e.g., 'omit', 'visual'
 %        when you want to exclude visual and brainstem: e.g., 'omit', {'visual', 'brainstem'}
 %
-%   **'long' or 'longlabel:**
+%   **'long' or 'longlabel':**
 %        show the long network labels. The default is using the short
 %        labels. 
 %
-%   **'color' or 'colors:**
+%   **'color' or 'colors':**
 %        you can specify the colors (the first cell should be the color for
 %        positive, and the second cell should be the color for negative)
 %        e.g., 'colors', {[1 0 0], [0 0 1]}; % pos neg
+%
+%  **'normalize':**
+%        make the sum of overlap probability into 1 (for each map)
 %
 
 dolabel = true;
