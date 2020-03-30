@@ -49,7 +49,7 @@ function y = time_varying_multivariate_estimate(data, window_width, varargin)
 %    data{1} = rand(2000,200); % time x voxel
 %    data{2} = rand(2000,100);
 %
-%    y = time_varying_multivariate_estimate('gaussian',data, 20)
+%    y = time_varying_multivariate_estimate(data, 20)
 %
 % ..
 %    By Wani Woo 
