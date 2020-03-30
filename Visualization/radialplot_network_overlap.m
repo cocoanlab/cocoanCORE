@@ -64,7 +64,7 @@ for i = 1:length(varargin)
     end
 end
 
-if numel(thresh_img)>1
+if size(thresh_img,1)>1
     do_posneg = false;
 end
 
@@ -155,7 +155,7 @@ end
 
 create_figure('radialplot_network_overlap');%  set(gcf, 'color', 'w');
 if do_posneg
-    [h.line, h.fill, h.ang] = tor_polar_plot({overlap_posneg(:,do_posneg).*100}, colors(do_posneg), {network_label}, 'nonumbers');
+    [h.line, h.fill, h.ang] = tor_polar_plot({overlap_posneg(:,any_posneg).*100}, colors(any_posneg), {network_label}, 'nonumbers');
 else
     if ismatrix(colors)
         colors_org = colors; clear colors;
