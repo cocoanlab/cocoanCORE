@@ -1,4 +1,4 @@
-function y = time_varying_multivariate_estimate(meth,data,varargin)
+function y = time_varying_multivariate_estimate(data, window_width, varargin)
 
 % Performs U-centered (bias corrected) distance correlation (default) between 
 % X and Y on symmetric moving average of data
@@ -14,23 +14,36 @@ function y = time_varying_multivariate_estimate(meth,data,varargin)
 %
 % :Inputs:
 %
-%   **meth:**
-%   Window-type options, either:
-%   - 'gaussian'
-%   - 'tukey'
+%   **data:** 
+%   - each cell should have multivariate data 
+%   - row (#common dimension, e.g., observation, time, conditions) 
+%       x column (#features, e.g., #voxels)
+%   - e.g., data{1} has 2000 (# time) x 200 (# voxels)
+%           data{2} has 2000 (# time) x 100 (# voxels)
 %
 % :Optional Inputs: 
 %
+%   **method:** Window-type options, either:
+%   - 'gaussian' 
+%   - 'tukey'
+% 
+%     * Note: These kernels do not work with dCor method because it modified
+%            the euclidean distances across conditions. 
+%
+%   - 'none' (default)
+%     * This is the default because the dCor method is default
+%
 %   **stepby:**
 %
-%   Sometimes input data is very high resolution, and it would take too much
-%   time to work element by element across the inputs.  You can enter an
-%   option here to compute estimates at every n-th lag.
+%   - Sometimes input data is very high resolution, and it would take too much
+%     time to work element by element across the inputs.  You can enter an
+%     option here to compute estimates at every n-th lag.
+%
 %
 % :Examples:
 % ::
 %
-%    y =  time_varying_multivariate_estimate('gaussian',data,20);
+%    y =  time_varying_multivariate_estimate(data,20);
 %    
 %    % generate random data
 %    data{1} = rand(2000,200); % time x voxel
@@ -43,9 +56,25 @@ function y = time_varying_multivariate_estimate(meth,data,varargin)
 %    Last updated: Mar 2020
 % ..
 
-nshift = 0;
 stepby = 1;                 % step size for shift
-center_local_data = false;   % mean-center local data: good for corr, bad for moving average
+meth = 'none';              % default method
+fhandle = @(x,y) dcor(x,y); % default fhandle: dCor
+% center_local_data = false;   % mean-center local data: good for corr, bad for moving average
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            % functional commands
+            case {'meth', 'method', 'methods'}
+                meth = varargin{i+1};
+            case {'fhandle'}
+                fhandle = varargin{i+1};
+            case {'stepby'}
+                stepby = varargin{i+1};
+        end
+    end
+end
+
 
 % set up the kernel
 % -------------------------------------------
@@ -53,7 +82,7 @@ switch meth
     
     case 'gaussian'
         
-         ntrials = varargin{1};
+         ntrials = window_width;
          kern = normpdf(-3:6/ntrials:3); 
          kern = kern./max(kern);            % norm to max of 1
          
@@ -64,35 +93,29 @@ switch meth
 
     case 'tukey'
         % Window length is the zero-influence to zero-influence time
-        kern = tukeywin(varargin{1});
-        nshift = round(varargin{1} ./ 2);
+        kern = tukeywin(window_width);
+        nshift = round(window_width ./ 2);
         
-        % kludgey adjust in case we need extra element
-        %if length(i - shift : i + nshift) > length(kern)
-            kern = [kern; 0];
-        %end
+        kern = [kern; 0];
         
-    otherwise error('Unknown method.')
+    case 'none'
+        ntrials = window_width;
+        nshift = round(window_width ./ 2);
+        kern = ones(ntrials,1);
+        kern = [kern; 0];
+        
+    otherwise
+        
+        error('Unknown method.')
         
 end
 
-% set up function handle
-% -------------------------------------------
-if length(varargin) > 1
-    fhandle = varargin{2};
-else
-    fhandle = @(x,y) dcor(x,y);
-end
-
-if length(varargin) > 2
-    stepby = varargin{3};
-end
 
 % set up data
 % -------------------------------------------
 
 if numel(data) > 2
-    error('Check the size of the input. This function can take only two sets of multivariate data.');
+    error('Check the size of the input. Currently, this function can take only two sets of multivariate data.');
 end
 
 for i = 1:numel(data)
@@ -117,12 +140,10 @@ y = zeros(nobs,1);
 % pad data at ends to avoid edge artifacts
 % -------------------------------------------
 for i = 1:numel(data)
-    paddat{i} = data{i}(end:-1:end-nshift,:);
-    
+    paddat{i} = data{i}(end:-1:end-nshift,:); % this will create biased 
+                                              % distance for the padded data (for dCor)
     data{i} = [data{i}; paddat{i}];
-    
     paddat{i} = data{i}(nshift:-1:1,:);
-    
     data{i} = [paddat{i}; data{i}];
 end
 
@@ -145,19 +166,21 @@ for i = [(nshift+1):stepby:(nobs + nshift) (nobs + nshift)]
         
     end
     
-    y(i, :) = fhandle(dati{1}, dati{2});  %r(1,2);
-    
-    %y(:,i) = tmpy(nshift+1:nshift+nobs);
+    y(i, :) = fhandle(dati{1}, dati{2});  
     
 end
 
 if stepby == 1
     y = y( (nshift+1):(nobs + nshift) );
-
+    
 else
     indx = [(nshift+1):stepby:(nobs + nshift) (nobs + nshift)];
     y = interp1(indx, y(indx), (nshift+1):(nobs + nshift));
 
 end
+
+y([1:nshift (end-nshift+1):end]) = NaN; % make the first and last values 
+                                        % within the window width NaNs to 
+                                        % take into account the bias
 
 end
