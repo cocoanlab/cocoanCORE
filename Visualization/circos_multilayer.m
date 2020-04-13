@@ -17,7 +17,7 @@ function circos_multilayer(A, varargin)
 %
 %   - group              group assignment of nodes. ex) [1,1,1,2,2,2,3,4], ...
 %   - group_color        RGB color values for each group. [groups X 3]
-%   - rotate             rotate circos plot clockwise. (degree)
+%   - rotate             rotate circos plot counter-clockwise. (degree)
 %   - length_ratio       relative ratio between [length of region patch,
 %                        interval between region path, interval between
 %                        groups]. (default: [10,1,3])
