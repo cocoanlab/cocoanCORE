@@ -46,8 +46,10 @@ function circos_multilayer(A, varargin)
 %                        (default: (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25 )
 %   - conn_order         order of drawing connections. [number of connections X 1]
 %                        (default: order from find() function )
-%
-%
+%   - each_patch_color   specify color of each patches(only for single patch
+%                        ([number of nodes X 3])
+%   - text_color         specify color of each color in 'region_names'
+%                        ([number of nodes X 3] or [number of nodes X 'name of color in string'(e.g. 'red')])
 % :Output:
 % ::   
 %
@@ -82,8 +84,10 @@ function circos_multilayer(A, varargin)
 %       'add_layer', {'layer', A_pos_deg_cent, 'color', A_pos_deg_cent_cols, ...
 %       'layer', A_neg_deg_cent, 'color', A_neg_deg_cent_cols}, ...
 %       'region_names', A_names, 'laterality', A_lat);
-%   
-% ..
+%
+%   %% note history
+%   2020/04/13 Jungwoo: add 'each_patch_color', 'text_color' option & 'Interpretor', 'None' for 'region_names' option
+%
 %     Author and copyright information:
 %
 %     Copyright (C) Jan 2019  Choong-Wan Woo & Jae-Joong Lee
@@ -186,6 +190,10 @@ for i = 1:length(varargin)
                 if iscolumn(conn_order)
                     conn_order = conn_order';
                 end
+            case {'each_patch_color'}
+                patch_cmap = varargin{i+1};
+            case {'text_color'}
+                text_color = varargin{i+1};
         end
     end
 end
@@ -309,7 +317,8 @@ for i = 1:N_node
         bottom_line = flipud(bottom_line);
     end
     patch_vec = [bottom_line; top_line];
-    patch_color = gcols(group_val(i),:);
+    if exist('patch_cmap', 'var'), patch_color = patch_cmap(i, :);
+    else, patch_color = gcols(group_val(i),:);end
     patch([patch_vec(:,1)], [patch_vec(:,2)], patch_color, 'linewidth', 0.5, 'edgecolor', patch_edge_color, 'edgealpha', patch_edge_alpha);
     
     %% ROI text
@@ -318,9 +327,23 @@ for i = 1:N_node
         text_rotate = rad2deg(mean(range_theta{i}));
         if text_rotate < -90 || text_rotate > 90
             text_rotate = text_rotate + 180;
-            h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, 'Rotation', text_rotate);
+            % h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, 'Rotation', text_rotate);
+            if exist('text_color', 'var'), text_col = text_color(i, :);
+                h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, ...
+                'Rotation', text_rotate, 'Interpreter', 'none', 'Color', text_col);
+            else
+                h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, ...
+                'Rotation', text_rotate, 'Interpreter', 'none');
+            end
         else
-            h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', region_names_size, 'Rotation', text_rotate);
+            % h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', region_names_size, 'Rotation', text_rotate);
+            if exist('text_color', 'var'), text_col = text_color(i, :);
+                h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', region_names_size, ...
+                    'Rotation', text_rotate, 'Interpreter', 'none', 'Color', text_col);
+            else
+                h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', region_names_size, ...
+                    'Rotation', text_rotate, 'Interpreter', 'none');
+            end
         end
     end
     
