@@ -22,6 +22,12 @@ function out = plot_specificity_box(y1, y2, varargin)
 %   - 'colors', 'color'  [2 x 3] matrix for indiciating two colors of
 %                        violin plot y1 (first row) and y2 (second row).
 %                        (default: first row is red, second row is yellow)
+%   - 'linecolors',      [2 x 3] matrix for indiciating colors of lines
+%      or 'linecolor'    connecting two violin plots.
+%                        First row indicates line color for y1 > y2,
+%                        and the second row indicates the line color for
+%                        y2 > y1.
+%                        (default: first row is red, second row is blue)
 %
 %
 % :Output:
@@ -57,6 +63,8 @@ function out = plot_specificity_box(y1, y2, varargin)
 
 cols = [0.8353    0.2431    0.3098
     0.9922    0.6824    0.3804];
+lcols = [0.8902    0.1020    0.1098
+    0.1961    0.5333    0.7412];
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -64,6 +72,8 @@ for i = 1:length(varargin)
             % functional commands
             case {'colors', 'color'}
                 cols = varargin{i+1};
+            case {'linecolors', 'linecolor'}
+                lcols = varargin{i+1};
         end
     end
 end
@@ -80,8 +90,8 @@ xdot{2} = ones(size(data,1),1)*2-.32;
 
 wh = data(:,1) > data(:,2);
 
-out.h1 = line([xdot{1}(wh) xdot{2}(wh)]', data(wh,1:2)', 'color', [227,26,28]./255, 'linewidth', 1.5);
-out.h2 = line([xdot{1}(~wh) xdot{2}(~wh)]', data(~wh,1:2)', 'color', [0.1961    0.5333    0.7412], 'linewidth', 1.5);
+out.h1 = line([xdot{1}(wh) xdot{2}(wh)]', data(wh,1:2)', 'color', lcols(1,:), 'linewidth', 1.5);
+out.h2 = line([xdot{1}(~wh) xdot{2}(~wh)]', data(~wh,1:2)', 'color', lcols(2,:), 'linewidth', 1.5);
 
 scatter(xdot{1}, data(:,1), 20, cols(1,:), 'filled'); 
 scatter(xdot{2}, data(:,2), 20, cols(2,:), 'filled'); 
