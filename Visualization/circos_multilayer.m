@@ -106,6 +106,8 @@ function circos_multilayer(A, varargin)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
+group = ones(size(A,1));
+gcols = [0.5 0.5 0.5];
 rotate_angle = 0;
 add_layer = {};
 do_region_label = false;
@@ -240,10 +242,6 @@ if laterality
 
 end
 
-N_node = size(A, 1);
-N_group = numel(unique(group));
-unit_theta = (2*pi) / (N_node * (length_region + interval_region) + N_group * interval_group);
-
 [group_val, group_idx] = sort(group, 'ascend');
 if laterality
     for i = (before_N_group+1):(before_N_group*2+1)
@@ -268,6 +266,11 @@ end
 if exist('region_names', 'var')
     region_names = region_names(group_idx);
 end
+
+
+N_node = size(A, 1);
+N_group = numel(unique(group));
+unit_theta = (2*pi) / (N_node * (length_region + interval_region) + N_group * interval_group);
     
 wh_interval = find(diff([group_val]) == 1); % find where group index differs = find where interval is located
 
@@ -413,6 +416,7 @@ for i = conn_order
 end
 
 axis off;
+set(gca, 'xlim', [-1.2 1.2], 'ylim', [-1.2 1.2]);
 set(gcf, 'color', 'w');
 
 end
