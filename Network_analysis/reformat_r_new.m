@@ -99,6 +99,8 @@ function r_out = reformat_r_new(r, varargin)
 %
 %    10/9/19 : J.J. - add 'include_diag' option
 %                   - add 'group_mean' and 'group_sum' option
+%
+%    5/20/20 : J.J. - add 'threshold' option
 % ..
 
 k = 1;
@@ -115,6 +117,7 @@ do_fisherz = false;
 do_ones_diag = false;
 do_z2r = false;
 do_group = false;
+do_threshold = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -151,6 +154,9 @@ for i = 1:length(varargin)
                 do_group = true;
                 group_fun = @(x) sum(x(:));
                 group_idx = varargin{i+1};
+            case {'threshold'}
+                do_threshold = true;
+                thresh_lvl = varargin{i+1};
         end
     end
 end
@@ -209,4 +215,13 @@ if do_group
     end
     r_out = r_out + r_out';
     r_out(1:n_group+1:end) = r_out(1:n_group+1:end) ./ 2;
+end
+
+if do_threshold
+    if size(r,1) > 1 && size(r,2) > 1 % square matrix
+        thresh_val = prctile(reformat_r_new(r, 'flatten'), 100 * (1 - thresh_lvl));
+    else
+        thresh_val = prctile(r, 100 * (1 - thresh_lvl));
+    end
+    r_out = r .* double(r > thresh_val);
 end
