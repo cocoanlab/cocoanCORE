@@ -107,4 +107,22 @@ for run_i = 1:n_run
     end
 end
 
+comm_idx = N_all.multi_module_consensus;
+comm_sorted_idx = comm_idx;
+u_comm_idx = unique(N_all.multi_module_consensus);
+u_comm_idx(isnan(u_comm_idx)) = [];
+overlap_mat = [];
+for run_i = 2:n_run
+    for u_i = 1:numel(u_comm_idx)
+        for u_j = 1:numel(u_comm_idx)
+            overlap_mat(u_j, u_i) = sum(comm_idx(:,run_i-1) == u_comm_idx(u_j) & comm_idx(:,run_i) == u_comm_idx(u_i));
+        end
+    end
+    [~, max_overlap] = max(overlap_mat);
+    for u_i = 1:numel(u_comm_idx)
+        comm_sorted_idx(comm_idx(:,run_i) == u_comm_idx(u_i), run_i) = u_comm_idx(max_overlap(u_i));
+    end
+end
+N_all.multi_module_consensus_sorted = comm_sorted_idx;
+
 end
