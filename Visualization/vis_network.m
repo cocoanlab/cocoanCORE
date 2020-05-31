@@ -98,11 +98,13 @@ function h = vis_network(W, varargin)
 %    08/29/18 : J.J.   - change to use only upper triangle because the input
 %                      should not be duplicate matrix.
 %    01/30/20 : Suhwan - add label option 
+%    05/30/20 : Suhwan - add gravity option 
 % ..
 %
 
 
 doweight = 0;
+dogravity = false; 
 do3d = 0;
 dodegree = 0; % change size of the node using degree
 do_w_degree = 0;
@@ -126,6 +128,8 @@ for i = 1:length(varargin)
             % functional commands
             case {'weighted', 'weight'}
                 doweight = 1;
+            case {'gravity'}
+                dogravity = true;
             case {'3d'} % not yet implemented
                 do3d = 1;
                 cl = varargin{i+1};
@@ -187,9 +191,9 @@ end
 hh = figure;
 
 if doweight
-    h_graph = plot(G,'Layout','force', 'WeightEffect', 'inverse');
+    h_graph = plot(G,'Layout','force', 'WeightEffect', 'inverse','UseGravity',dogravity); 
 else
-    h_graph = plot(G,'Layout','force');
+    h_graph = plot(G,'Layout','force','UseGravity',dogravity);
 end
 X = [h_graph.XData',h_graph.YData'];
 close(hh);
