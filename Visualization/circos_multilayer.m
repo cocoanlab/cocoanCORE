@@ -416,7 +416,6 @@ for i = conn_order
 end
 
 axis off;
-set(gca, 'xlim', [-1.2 1.2], 'ylim', [-1.2 1.2]);
 set(gcf, 'color', 'w');
 
 end
