@@ -12,6 +12,7 @@ use_color_shade = false;
 do_alpha = false;
 alpha = 1;
 linew = 2;
+lines = '-';
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -26,6 +27,8 @@ for i = 1:length(varargin)
                 alpha = varargin{i+1}; % degree-corrected SBM
             case {'linewidth'}
                 linew = varargin{i+1};
+            case {'linestyle'}
+                lines = varargin{i+1};
         end
     end
 end
@@ -46,7 +49,7 @@ h_patch = patch(xdata,ydata,'y','linestyle', 'none', 'FaceColor', color2, 'faceA
 
 hold on;
 
-h_line = plot(xaxis, mean, '-', 'linewidth', linew, 'color', color, 'MarkerSize', 4, 'MarkerFaceColor', color);
+h_line = plot(xaxis, mean, lines, 'linewidth', linew, 'color', color, 'MarkerSize', 4, 'MarkerFaceColor', color);
 % h_line = plot(xaxis, mean, '-', 'linewidth', linew, 'color', color);
 
 end
