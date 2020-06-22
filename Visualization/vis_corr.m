@@ -219,6 +219,11 @@ end
 if do_display
     % default: upper 97.5%, lower 2.5%
     m = max(prctile(r(:), 97.5), abs(prctile(r(:), 2.5)));
+    if m == 0 
+        tr = r; 
+        tr(r==0) = [];
+        m = max(prctile(tr(:), 97.5), abs(prctile(tr(:), 2.5)));
+    end
     clim = [-m m];
     clim_descript = 'default: upper 97.5%, lower 2.5%';
     
