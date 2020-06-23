@@ -120,6 +120,8 @@ for suppos_i = 1:n_suppos
     
 end
 
+xymax = max(abs([get(gca, 'xlim') get(gca, 'ylim')]));
+set(gca, 'xlim', [-xymax xymax], 'ylim', [-xymax xymax]);
 set(gcf, 'name', 'Fractal', 'color', 'white', 'position', [669   368   604   571]);
 axis off;
 
