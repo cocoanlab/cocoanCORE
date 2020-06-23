@@ -1,4 +1,4 @@
-function generate_fractal_images
+function generate_fractal_images(varargin)
 
 % This function generates fractal images.
 %
@@ -13,7 +13,22 @@ function generate_fractal_images
 %
 % :Input:
 % ::
-%   - TBD                TBD
+%
+%
+% :Optional Input:
+% ::
+%   - range_suppos       range of number of superposition. ex) [1 4], ...
+%                        (default: [2 4])
+%   - range_initvert     range of initial number of edges. ex) [1 4], ...
+%                        (default: [3 5])
+%   - range_recur        range of depth of recursion. ex) [1 4], ...
+%                        (default: [3 5])
+%   - range_cols         range of colormap.
+%                        (default: 12 qualitative colors from Colorbrewer2)
+%   - def_coef           coefficient of edge deflection.
+%                        extent of deflection is defined as
+%                        [randn * def_coef(1) + def_coef(2)].
+%                        (default: [1 0])
 %
 %
 % :Output:
@@ -22,6 +37,8 @@ function generate_fractal_images
 %
 % :Example:
 % ::
+%   % generate fractal images.
+%   generate_fractal_images('range_suppos', [3 3], 'range_initvert', [5 10], 'range_recur', [5 7], 'def_coef', [0.2 0.1])
 %
 %
 % ..
@@ -43,9 +60,10 @@ function generate_fractal_images
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-n_suppos = randi([2 4]); % number of superposition
-cols_all = jet(128);
-cols_all = [166,206,227
+range_suppos = [2 4];
+range_initvert = [3 5];
+range_recur = [3 5];
+range_cols = [166,206,227
     31,120,180
     178,223,138
     51,160,44
@@ -56,18 +74,39 @@ cols_all = [166,206,227
     202,178,214
     106,61,154
     255,255,153
-    177,89,40] ./ 255;
+    177,89,40] ./ 255; % 12 qualitative colors from Colorbrewer2
+def_coef = [1 0];
+
+for i = 1:length(varargin)
+    if ischar(varargin{i})
+        switch varargin{i}
+            case {'range_suppos'}
+                range_suppos = varargin{i+1};
+            case {'range_initvert'}
+                range_initvert = varargin{i+1};
+            case {'range_recur'}
+                range_recur = varargin{i+1};
+            case {'range_cols'}
+                range_cols = varargin{i+1};
+            case {'def_coef'}
+                def_coef = varargin{i+1};
+        end
+    end
+end
+
+
+n_suppos = randi(range_suppos); % number of superposition
 
 figure;
 
 for suppos_i = 1:n_suppos
     
-    n_edge = randi([3 6]); % number of edges
-    n_recur = randi([3 5]); % number of recursion
-    GA = randn;
-    cols = cols_all(randi(size(cols_all,1)), :);
+    n_initvert = randi(range_initvert); % number of initial edges
+    n_recur = randi(range_recur); % number of recursion
+    GA = randn * def_coef(1) + def_coef(2);
+    cols = range_cols(randi(size(range_cols,1)), :);
     
-    pgon = nsidedpoly(n_edge, 'Center', [0 0], 'Radius', 1);
+    pgon = nsidedpoly(n_initvert, 'Center', [0 0], 'Radius', 1);
     pgon = patch(pgon.Vertices(:,1), pgon.Vertices(:,2), cols);
     pgon.EdgeAlpha = 0;
     
@@ -81,6 +120,8 @@ for suppos_i = 1:n_suppos
     
 end
 
+set(gcf, 'name', 'Fractal', 'color', 'white', 'position', [669   368   604   571]);
+axis off;
 
 end
 
