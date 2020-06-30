@@ -37,13 +37,20 @@ function out = markov_chain(states_input, varargin)
 
 n_col = size(states_input,2);
 n_state = numel(unique(states_input));
+boundary = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             % functional commands
             case {'n_state', 'n_states'}
-                n_state = varargin{i+1}; 
+                n_state = varargin{i+1};
+            case {'boundary'}
+                boundary = true;
+                boundary_n = varargin{i+1};
+                if max(boundary_n) > size(states_input,1)
+                    error('boundary condition should be shorter than the length of states input')
+                end
         end
     end
 end
@@ -52,8 +59,11 @@ for j = 1:n_col
     
     states = states_input(:,j);
     
-    trans_idx = [states(1:end-1) states(2:end)];
     out{j}.trans_mat = zeros(n_state,n_state);
+    trans_idx = [states(1:end-1) states(2:end)];
+    if boundary
+        trans_idx(boundary_n',:) = [];
+    end
     
     for i = 1:size(trans_idx,1)
         out{j}.trans_mat(trans_idx(i,1), trans_idx(i,2)) = out{j}.trans_mat(trans_idx(i,1), trans_idx(i,2))+1;
