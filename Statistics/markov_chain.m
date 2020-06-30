@@ -20,6 +20,9 @@ function out = markov_chain(states_input, varargin)
 % :Optional inputs:
 %   **n_state:**
 %      the number of states, e.g., 'n_state', 3
+%   **boundary:**
+%      if you concatenate data from different runs and do not want include
+%      the transition data at the boundary. e.g., 'boundary', [40, 80, 120]
 %
 % :Outputs:
 %
