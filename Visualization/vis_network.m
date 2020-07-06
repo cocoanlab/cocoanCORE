@@ -188,6 +188,10 @@ if doweight
 else
     G = graph(i,j);
 end
+
+% add the empty nodes at the end of the network
+G = addnode(G, size(W,1)-max(max(i), max(j)));
+
 hh = figure;
 
 if doweight
