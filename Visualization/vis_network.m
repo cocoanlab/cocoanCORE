@@ -121,6 +121,9 @@ do_arrow = false;
 arrow_len = 10;
 do_label = false;
 node_edge_color = 'w';
+xy = [];
+do_trans = false;
+node_lwidth = 2;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -164,11 +167,15 @@ for i = 1:length(varargin)
                 do_arrow = true;
             case {'arrow_length'}
                 arrow_len = varargin{i+1};
-            case {'label'}
+            case {'label', 'labels'}
                 do_label = 1;
                 labelname = varargin{i+1};
             case {'node_edge_color'}
                 node_edge_color = varargin{i+1};
+            case {'xy'}
+                xy = varargin{i+1};
+            case {'trans'}
+                do_trans = true;
         end
     end
 end
@@ -182,6 +189,7 @@ end
 
 new_s = (abs(s) - min(abs(s)))./(max(abs(s))-min(abs(s))); % 0-1 normalization
 new_s = new_s.*4+1; % 1~4
+trans_val = ((new_s-min(new_s))./(max(new_s)-min(new_s)))*0.9+0.1; % 0.1-1 normalization
 
 if doweight
     G = graph(i,j,s);
@@ -200,6 +208,11 @@ else
     h_graph = plot(G,'Layout','force','UseGravity',dogravity);
 end
 X = [h_graph.XData',h_graph.YData'];
+
+if ~isempty(xy)
+    X = xy;
+end
+
 close(hh);
 
 if do3d
@@ -220,9 +233,9 @@ if ~noline
 
             h.edge_neg(k) = arrow([newx(1) newy(1)], [newx(2) newy(2)], 'length', arrow_len);
             if doweight
-                set(h.edge_neg(k), 'edgecolor', ln_neg_color, 'facecolor', ln_pos_color,  'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
+                set(h.edge_neg(k), 'edgecolor', ln_neg_color, 'facecolor', ln_neg_color,  'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
             else
-                set(h.edge_neg(k), 'edgecolor', ln_neg_color, 'facecolor', ln_pos_color, 'linewidth', ln_width);
+                set(h.edge_neg(k), 'edgecolor', ln_neg_color, 'facecolor', ln_neg_color, 'linewidth', ln_width);
             end
             hold on;
         end
@@ -250,9 +263,18 @@ if ~noline
         for k = 1:numel(neg_i)
             h.edge_neg(k) = line([X(neg_i(k),1) X(neg_j(k),1)], [X(neg_i(k),2) X(neg_j(k),2)]);
             if doweight
-                set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', new_s(sum([i==neg_i(k) j==neg_j(k)],2)==2));
+                e_idx = sum([i==neg_i(k) j==neg_j(k)],2)==2;
+                if do_trans
+                    set(h.edge_neg(k), 'color', [ln_neg_color trans_val(e_idx)], 'linewidth', new_s(e_idx));
+                else
+                    set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', new_s(e_idx));
+                end
             else
-                set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', ln_width);
+                if do_trans
+                    set(h.edge_neg(k), 'color', [ln_neg_color .5], 'linewidth', ln_width);
+                else
+                    set(h.edge_neg(k), 'color', ln_neg_color, 'linewidth', ln_width);
+                end
             end
             hold on;
         end
@@ -262,9 +284,18 @@ if ~noline
         for k = 1:numel(pos_i)
             h.edge_pos(k) = line([X(pos_i(k),1) X(pos_j(k),1)], [X(pos_i(k),2) X(pos_j(k),2)]);
             if doweight
-                set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', new_s(sum([i==pos_i(k) j==pos_j(k)],2)==2));
+                e_idx = sum([i==pos_i(k) j==pos_j(k)],2)==2;
+                if do_trans
+                    set(h.edge_pos(k), 'color', [ln_pos_color trans_val(e_idx)], 'linewidth', new_s(e_idx));
+                else
+                    set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', new_s(e_idx));
+                end
             else
-                set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', ln_width);
+                if do_trans
+                    set(h.edge_pos(k), 'color', [ln_pos_color .5], 'linewidth', ln_width);
+                else
+                    set(h.edge_pos(k), 'color', ln_pos_color, 'linewidth', ln_width);
+                end
             end
             hold on;
         end
@@ -275,17 +306,17 @@ W = reformat_r_new(W, 'symmetric_sum');
 if dodegree
     d = sum(W~=0);
     if all(d==d(1)), d = repmat(150, size(d));
-    else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
+    else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50-450
     end
 elseif do_absw_degree
     d = sum(abs(W));
     if all(d==d(1)), d = repmat(150, size(d));
-    else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
+    else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50-450
     end
 elseif do_w_degree
     d = sum(W);
     if all(d==d(1)), d = repmat(150, size(d));
-    else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50~450
+    else, d = ((d-min(d))./(max(d)-min(d))*4+.5)*100; % 50-450
     end
 elseif do_manual_node_size
     d = node_size;
@@ -312,24 +343,24 @@ h.node_xy = NaN(size(X,1),2);
 
 if dogroup
     for g_i = unique(grouping)'
-        h.node_hl{g_i} = scatter(X(wh_hl & grouping==g_i,1), X(wh_hl & grouping==g_i,2), d(wh_hl & grouping==g_i), 'filled', 'MarkerFaceColor', g_cols(g_i,:), 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
+        h.node_hl{g_i} = scatter(X(wh_hl & grouping==g_i,1), X(wh_hl & grouping==g_i,2), d(wh_hl & grouping==g_i), 'filled', 'MarkerFaceColor', g_cols(g_i,:), 'MarkerEdgeColor', node_edge_color , 'LineWidth', node_lwidth);
         h.node_xy(wh_hl & grouping==g_i,1) = h.node_hl{g_i}.XData;
         h.node_xy(wh_hl & grouping==g_i,2) = h.node_hl{g_i}.YData;
         hold on;
     end
     if any(wh_hl == 0)
-        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
+        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', node_lwidth);
         h.node_xy(~wh_hl,1) = h.node_nohl.XData;
         h.node_xy(~wh_hl,2) = h.node_nohl.YData;
         hold on;
     end
 else
-    h.node_hl = scatter(X(wh_hl,1), X(wh_hl,2), d(wh_hl), 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
+    h.node_hl = scatter(X(wh_hl,1), X(wh_hl,2), d(wh_hl), 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', node_lwidth);
     h.node_xy(wh_hl,1) = h.node_hl.XData;
     h.node_xy(wh_hl,2) = h.node_hl.YData;
     hold on;
     if any(wh_hl == 0)
-        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', 1.5);
+        h.node_nohl = scatter(X(~wh_hl,1), X(~wh_hl,2), 50, 'filled', 'MarkerFaceColor', [.5 .5 .5], 'MarkerEdgeColor', node_edge_color , 'LineWidth', node_lwidth);
         h.node_xy(~wh_hl,1) = h.node_nohl.XData;
         h.node_xy(~wh_hl,2) = h.node_nohl.YData;
         hold on;
@@ -337,7 +368,7 @@ else
 end
 
 if do_label
-    label_space = 0.1;
+    label_space = ((max(X(:,1))-min(X(:,1))))*0.02; 
     text(X(:,1)+label_space , X(:,2),labelname);
 end
 
