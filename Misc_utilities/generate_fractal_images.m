@@ -29,6 +29,8 @@ function generate_fractal_images(varargin)
 %                        extent of deflection is defined as
 %                        [randn * def_coef(1) + def_coef(2)].
 %                        (default: [1 0])
+%   - back_cols          background color.
+%                        (default: [50 50 50] ./ 255)
 %
 %
 % :Output:
@@ -76,6 +78,7 @@ range_cols = [166,206,227
     255,255,153
     177,89,40] ./ 255; % 12 qualitative colors from Colorbrewer2
 def_coef = [1 0];
+back_cols = [50 50 50] ./ 255;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -90,6 +93,8 @@ for i = 1:length(varargin)
                 range_cols = varargin{i+1};
             case {'def_coef'}
                 def_coef = varargin{i+1};
+            case {'back_cols'}
+                back_cols = varargin{i+1};
         end
     end
 end
@@ -123,6 +128,9 @@ end
 xymax = max(abs([get(gca, 'xlim') get(gca, 'ylim')]));
 set(gca, 'xlim', [-xymax xymax], 'ylim', [-xymax xymax]);
 set(gcf, 'name', 'Fractal', 'color', 'white', 'position', [669   368   604   571]);
+rectangle('Position', [-xymax -xymax 2*xymax 2*xymax], 'FaceColor', back_cols, 'EdgeColor', back_cols)
+h = get(gca, 'Children');
+set(gca, 'Children', h([2:end, 1]));
 axis off;
 
 end
