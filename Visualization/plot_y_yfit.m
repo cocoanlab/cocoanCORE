@@ -83,7 +83,7 @@ else
         189,0,38]./255;
 end
 
-figure('Y-Yfit plot');
+figure;
 
 clear test_por;
 if iscell(yval)
