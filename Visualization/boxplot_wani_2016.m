@@ -368,7 +368,7 @@ for i = 1:k
         
         whu = myU > st(j) & myU <= en(j);
         
-        mylimit(j) = nanmean(myF(whu))/1.5;  % average density for this 'slab' of points
+        mylimit(j) = mean(myF(whu),'omitnan')/1.5;  % average density for this 'slab' of points
         
         my_xvals = linspace(myx - mylimit(j), myx + mylimit(j), sum(whpoints))';
         

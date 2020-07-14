@@ -83,7 +83,7 @@ else
         189,0,38]./255;
 end
 
-figure;
+create_figure('y_yfit_plot');
 
 clear test_por;
 if iscell(yval)
@@ -152,7 +152,7 @@ if do_xyline
     line(xlim, xlim, 'linewidth', 4, 'linestyle', ':', 'color', [.5 .5 .5]);
 end
 
-set(gcf, 'position', position, 'color', 'w');
+set(gcf, 'position', position);
 set(gca, 'tickdir', 'out', 'TickLength', [.03 .03], 'linewidth', 1.5, 'xlim', xlim, 'ylim', ylim, 'fontsize', 18);
 
 end
