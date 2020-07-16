@@ -78,11 +78,7 @@ for i = 1:length(varargin)
     end
 end
 
-create_figure('plot');
-
 data = [y1 y2];
-
-close all;
 boxplot_wani_2016(data, 'color', cols, 'linewidth', 2, 'boxlinewidth', 1, 'mediancolor', 'k', 'violin');
 
 xdot{1} = ones(size(data,1),1)*1+.32;
