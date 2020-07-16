@@ -9,10 +9,12 @@ function [handles, dot_locs] = boxplot_wani_2016(x, varargin)
 %
 % Inputs:
 % -------------------------------------------------------------------------
-% x    A data matrix. If there are multiple groups, you can insert a column
-%      of NaNs between two groups. Also if you have multiple columns that
-%      have different number of data points (e.g., one has 50, and the 
-%      other has 38), you can just fill in NaNs (e.g., 12 NaNs). 
+% x    A data matrix or cell. If there are multiple groups, you can insert
+%      a column of NaNs (matrix) or insert a empty matrix (cell) between
+%      the two groups.
+%      Also if you have multiple columns that have different number of data
+%      points (e.g., one has 50, and the other has 38), you can just use
+%      cell-type input or manually fill in NaNs (e.g., 12 NaNs).
 % 
 % -------------------------------------------------------------------------
 % Optional inputs: Enter keyword followed by variable with values
@@ -65,6 +67,17 @@ function [handles, dot_locs] = boxplot_wani_2016(x, varargin)
 %     pagesetup(gcf);
 %     saveas(gcf, savename);
 % end
+
+if iscell(x)
+    coln = numel(x);
+    eachn = cellfun(@numel, x);
+    maxn = max(eachn);
+    x_new = NaN(maxn, coln);
+    for i = 1:coln
+        x_new(1:eachn(i),i) = x{i};
+    end
+    x = x_new;
+end
 
 coln = size(x,2);
 colud = repmat([0 0 0], coln*2, 1); % default color = black
