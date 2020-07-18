@@ -51,7 +51,7 @@ function h = color_check(colors)
 
 h = figure;
 for i = 1:size(colors,1)
-    patch(i+[0 0 1 1], [0 1 1 0],colors(i,:));
+    patch(i+[0 0 1 1], [0 1 1 0],colors(i,:),'EdgeColor','none');
     hold on;
 end
 
