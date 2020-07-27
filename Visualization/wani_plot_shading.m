@@ -13,6 +13,8 @@ do_alpha = false;
 alpha = 1;
 linew = 2;
 lines = '-';
+upline = [];
+lowline = [];
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -29,12 +31,26 @@ for i = 1:length(varargin)
                 linew = varargin{i+1};
             case {'linestyle'}
                 lines = varargin{i+1};
+            case {'upperline'}
+                upline = varargin{i+1};
+            case {'lowerline'}
+                lowline = varargin{i+1};
         end
     end
 end
 
-upperline = mean + error;
-lowerline = mean - error;
+if ~isempty(upline)
+    upperline = upline; 
+else
+    upperline = mean + error;
+end
+
+if ~isempty(lowline)
+    lowerline = lowline; 
+else
+    lowerline = mean - error;
+end
+
 xdata = [xaxis fliplr(xaxis) xaxis(1)];
 ydata = [upperline fliplr(lowerline) upperline(1)];
 
