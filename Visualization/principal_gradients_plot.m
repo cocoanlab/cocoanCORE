@@ -23,7 +23,13 @@ function results = principal_gradients_plot(thresh_img, varargin)
 % :Inputs:
 %
 %   **thresh_img:**
-%        thresholded image files (e.g., thresh_img = 'thresh_p_05.nii';)
+%        thresholded image files 
+%           (e.g., thresh_img = 'thresh_p_05.nii';
+%                  thresh_img = {'thresh_p_05.nii';'thresh_p_01.nii'})
+%               or 
+%        fmri_data object 
+%           (e.g., thresh_img = fmri_data(which('thresh_p_05.nii');
+%        
 %
 %
 % :Optional Inputs: Enter keyword followed by variable with values
@@ -38,9 +44,13 @@ function results = principal_gradients_plot(thresh_img, varargin)
 %   **'numbins:**
 %        change nubmer of bins (default: 20).
 %
+% :See also:
+%   example_principal_gradient_plot.m
+%
 % :Examples: 
 %
 %   % ** Use first gradient map
+%   thresh_img = {'thresh_p_05.nii', 'thresh_p_01.nii'};
 %   results = principal_gradients_plot(thresh_img);
 %   pagesetup(gcf);
 %   savenames = 'temp_map.pdf'
@@ -51,23 +61,34 @@ function results = principal_gradients_plot(thresh_img, varargin)
 %   results = principal_gradients_plot(thresh_img,'other_comp',numComp,'numBins',10); 
 %
 
-%% Parse various argumetns 
+
+
+%% Default option 
 doplot = true;
-pgmapdir = which('ten_prinicpal_gradients_volumn_DE.nii'); % In cocoanCORE/Canonical_brains
+pgmapdir = which('ten_prinicpal_gradients_volumn_DE.nii'); 
 comp_num = 1; % first gradient axis (transmoal - unimodal)
 numBins  = 20;
+mCol = hsv(5);
+mCol = mCol(randperm(5),:);
+%mCol = [245 23 123]./255;
+use_exist = false;
+%% Parse argumetns 
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch lower(varargin{i})
             % functional commands
 %             case {'gradientmap'}
 %                 pgmapdir = varargin{i+1};
+            case {'markercolor'}
+                mCol = varargin{i+1};
             case {'noplots'}
                 doplot = false;
             case {'other_comp'}
                 comp_num = varargin{i+1};
             case {'numbins'}
                 numBins = varargin{i+1};
+            case {'samefigure'}
+                use_exist = true;
             otherwise
                 error('Unknown arguments')                 
         end
@@ -77,15 +98,25 @@ end
 temp_pgmap = fmri_data(pgmapdir,which('gray_matter_mask.nii')); 
 pgmap = temp_pgmap.get_wh_image(comp_num); 
 pgmap.dat = pgmap.dat - min(pgmap.dat); % make data positive
+%% Load data 
+if isobject(thresh_img) % 
+    nImgs = 1;
+    pattern_data = thresh_img; 
+else 
+    nImgs = numel(thresh_img);
+    
+    thresh_img = thresh_img(:);
+    pattern_data = fmri_data(thresh_img, which('gray_matter_mask.nii'));
+end
 %% compare voxel space and size 
-isdiff = compare_space(pgmap, thresh_img);
+isdiff = compare_space(pgmap, pattern_data);
 
 if isdiff == 1 || isdiff == 2 % diff space, not just diff voxels
     % == 3 is ok, diff non-empty voxels
     
     % Both work, but resample_space does not require going back to original
     % images on disk.    
-    mask = resample_space(pgmap, thresh_img,'nearest');
+    mask = resample_space(pgmap, pattern_data,'nearest');
     
     % tor added may 1 - removed voxels was not legal otherwise
     %mask.removed_voxels = mask.removed_voxels(mask.volInfo.wh_inmask);
@@ -113,30 +144,39 @@ for i = 1:numBins
      bins_gmmask.dat = double(temp_bins);
      bins_mask{i} = bins_gmmask;       
 end
-%% Average -activation 
-bins_results_nVox = []; 
-bins_results_Percent = []; 
-lengthmasked = []; 
-for bin_i = 1:numBins
-    temp_resutls = []; 
-    %lengthmasked{bin_i} = length(find(thresh_img.dat ~=0));
-    temp_results = apply_mask(thresh_img, bins_mask{bin_i});
-    bins_results_nVox(:,bin_i) = sum(temp_results.dat ~=0);    
+%% Average
+bins_results_nVox = [];
+bins_results_Percent = [];
+lengthmasked = [];
+for img_i = 1:nImgs
+    for bin_i = 1:numBins
+        temp_results = [];
+        %lengthmasked{bin_i} = length(find(thresh_img.dat ~=0));
+        temp_results = apply_mask(pattern_data.get_wh_image(img_i), bins_mask{bin_i});
+        bins_results_nVox{img_i}(:,bin_i) = sum(temp_results.dat ~=0);
+    end
+    bins_results_Percent{img_i} = bins_results_nVox{img_i}./sum(bins_results_nVox{img_i});
 end
-bins_results_Percent = bins_results_nVox./sum(bins_results_nVox);
-%% results
-results.bins_nVox = bins_results_nVox;
-results.bins_Percentage = bins_results_Percent;
 
+%% results
+results.bins_nVox = bins_results_nVox; % number of voxels 
+results.bins_Percentage = bins_results_Percent; % percentage
+results.binned_map = bins_mask; % binned mask 
 %% Ploting
 if doplot 
-    create_figure('map-wise percentil');
+    if ~use_exist
+        create_figure('map-wise percentil');
+    end
     set(gcf,'position',[185   726   449   165]);
     mSize = 50; 
-    sepplot2(1:numBins, bins_results_Percent, 0.7,'markercolor',[245 23 123]./255,'linewidth',2,'markersize',mSize);
+    hold on;
+    for img_i = 1:nImgs       
+        sepplot2(1:numBins, bins_results_Percent{img_i}, 0.7,'markercolor',mCol(img_i,:),'linewidth',2,'markersize',mSize);
+    end
+    hold off;
     box off;
     set(gca, 'linewidth', 2,'xlim',[0.7 numBins+0.3], 'XTick','','XTickLabel', '', 'YTick', [0:0.1:1],'YTickLabel',[0:0.1:1], ...
-    'tickdir', 'out', 'ticklength', [.02 0.02], 'fontsize', 18)%,'ylim',[-0.15 1.5]);% ,'XTickLabelRotation',360-45);
+    'tickdir', 'out', 'ticklength', [.02 0.02], 'fontsize', 18,'ylim', [0 max(cat(2,bins_results_Percent{:}))]);% ,'XTickLabelRotation',360-45);
 end
 
 
