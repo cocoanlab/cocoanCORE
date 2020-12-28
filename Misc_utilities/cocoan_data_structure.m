@@ -53,6 +53,7 @@ function out = cocoan_data_structure(project_name, basedir, varargin)
 
 % Programmers' notes:
 %
+% updated to version 2.0 (June 14 2019) by Suhwan Gim 
 
 dry_run = true;
 make_data = true;
@@ -81,18 +82,22 @@ disp('   Directory checking...');
 disp(line);
 
 if make_data && ~exist(fullfile(basedir, 'data'), 'dir')
-    error('\nThe directory %s does not exist!!! Please check!!!', fullfile(basedir, 'data'));
+    error('\nThe ''data'' directory %s does not exist!!! Please check!!!', fullfile(basedir, 'data'));
 end
 
 if make_project && ~exist(fullfile(basedir, 'projects'), 'dir')
-    error('\nThe directory %s does not exist!!! Please check!!!', fullfile(basedir, 'projects'));
+    error('\nThe ''projects'' directory %s does not exist!!! Please check!!!', fullfile(basedir, 'projects'));
 end
 
 if make_data
+    % ---------------------------------------------------------------------------------
+    % Data: store raw to preproceessed data that can be used in projects 
+    %  *Keep in mind that your data can be used for other projects
+    % ---------------------------------------------------------------------------------
     data_dir{1} = fullfile(basedir, 'data', project_name);
     data_dir{2} = fullfile(basedir, 'data', project_name, 'imaging');
     data_dir{3} = fullfile(basedir, 'data', project_name, 'imaging', 'preproc_script');
-    data_dir{4} = fullfile(basedir, 'data', project_name, 'imaging', 'dicom_from_scanner');
+    data_dir{4} = fullfile(basedir, 'data', project_name, 'imaging', 'dicom_from_scanner');    
     data_dir{5} = fullfile(basedir, 'data', project_name, 'behavioral');
     data_dir{6} = fullfile(basedir, 'data', project_name, 'behavioral', 'raw');
     data_dir{7} = fullfile(basedir, 'data', project_name, 'behavioral', 'preprocessed');
@@ -104,16 +109,33 @@ if make_data
 end
 
 if make_project
+    % ---------------------------------------------------------------------------------
+    % Projects: store models and analysis that are specifially related to your projects 
+    % ---------------------------------------------------------------------------------
     proj_dir{1} = fullfile(basedir, 'projects', project_name);
-    proj_dir{2} = fullfile(basedir, 'projects', project_name, 'writing');
-    proj_dir{3} = fullfile(basedir, 'projects', project_name, 'literature');
-    proj_dir{4} = fullfile(basedir, 'projects', project_name, 'data');
-    proj_dir{5} = fullfile(basedir, 'projects', project_name, 'scripts');
-    proj_dir{6} = fullfile(basedir, 'projects', project_name, 'notes');
-    proj_dir{7} = fullfile(basedir, 'projects', project_name, 'analysis');
-    proj_dir{8} = fullfile(basedir, 'projects', project_name, 'analysis', 'behavioral');
-    proj_dir{9} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging');
-    proj_dir{10} = fullfile(basedir, 'projects', project_name, 'figures');
+    proj_dir{2} = fullfile(basedir, 'projects', project_name,'sync');
+    proj_dir{3} = fullfile(basedir, 'projects', project_name,'sync','writing');
+    proj_dir{4} = fullfile(basedir, 'projects', project_name,'sync','literature');
+    proj_dir{5} = fullfile(basedir, 'projects', project_name,'sync','data');
+    proj_dir{6} = fullfile(basedir, 'projects', project_name,'sync','scripts');        
+    proj_dir{7} = fullfile(basedir, 'projects', project_name,'sync','results');
+    proj_dir{8} = fullfile(basedir, 'projects', project_name,'sync','figures');
+    % These 'sync' folders will be also loacted in personal labtop and
+    % shared with Wani through "dropbox"
+    % --------------------------------------------------------------------------------
+    proj_dir{9} = fullfile(basedir, 'projects', project_name, 'data');    
+    proj_dir{10} = fullfile(basedir, 'projects', project_name, 'notes');
+    proj_dir{11} = fullfile(basedir, 'projects', project_name, 'analysis');
+    proj_dir{12} = fullfile(basedir, 'projects', project_name, 'analysis', 'behavioral');
+    proj_dir{13} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging');
+    proj_dir{14} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','first_level');
+    proj_dir{15} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','first_level','model01');
+    proj_dir{16} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','second_level');
+    proj_dir{17} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','second_level','model01');
+    proj_dir{18} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','mediation');    
+    proj_dir{19} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','pattern');
+    proj_dir{20} = fullfile(basedir, 'projects', project_name, 'analysis', 'imaging','connectivity');
+    % You can modify these folder based on your project
 end
 
 if make_data
