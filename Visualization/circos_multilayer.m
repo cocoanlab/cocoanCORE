@@ -51,7 +51,7 @@ function circos_multilayer(A, varargin)
 %   - text_color         specify color of each color in 'region_names'
 %                        ([number of nodes X 3] or [number of nodes X 'name of color in string'(e.g. 'red')])
 % :Output:
-% ::   
+% ::
 %
 %
 % :Example:
@@ -239,7 +239,7 @@ if laterality
         group(lat_index == 1) = before_N_group*2 + 2 - group(lat_index == 1);
     end
     gcols = [gcols; gcols(end,:); flipud(gcols)];
-
+    
 end
 
 [group_val, group_idx] = sort(group, 'ascend');
@@ -271,7 +271,7 @@ end
 N_node = size(A, 1);
 N_group = numel(unique(group));
 unit_theta = (2*pi) / (N_node * (length_region + interval_region) + N_group * interval_group);
-    
+
 wh_interval = find(diff([group_val]) == 1); % find where group index differs = find where interval is located
 
 j = 0:(length_region-interval_region);
@@ -333,10 +333,10 @@ for i = 1:N_node
             % h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, 'Rotation', text_rotate);
             if exist('text_color', 'var'), text_col = text_color(i, :);
                 h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, ...
-                'Rotation', text_rotate, 'Interpreter', 'none', 'Color', text_col);
+                    'Rotation', text_rotate, 'Interpreter', 'none', 'Color', text_col);
             else
                 h = text(text_line(1), text_line(2), [region_names{i} '- '], 'HorizontalAlignment', 'Right', 'Fontsize', region_names_size, ...
-                'Rotation', text_rotate, 'Interpreter', 'none');
+                    'Rotation', text_rotate, 'Interpreter', 'none');
             end
         else
             % h = text(text_line(1), text_line(2), [' -' region_names{i}], 'HorizontalAlignment', 'Left', 'Fontsize', region_names_size, 'Rotation', text_rotate);
@@ -407,12 +407,20 @@ for i = conn_order
         theta = linspace(thetaLim(1),thetaLim(2)).';
     end
     
-    line(...
-        r*cos(theta)+x0,...
-        r*sin(theta)+y0,...
-        'LineWidth', conn_width(i),...
-        'PickableParts','none', 'color', [conn_color(i,:) conn_alpha(i)]);
-
+    if abs(u + v) < eps
+        line(...
+            [u(1) v(1)],...
+            [u(2) v(2)],...
+            'LineWidth', conn_width(i),...
+            'PickableParts','none', 'color', [conn_color(i,:) conn_alpha(i)]);
+    else
+        line(...
+            r*cos(theta)+x0,...
+            r*sin(theta)+y0,...
+            'LineWidth', conn_width(i),...
+            'PickableParts','none', 'color', [conn_color(i,:) conn_alpha(i)]);
+    end
+    
 end
 
 axis off;
