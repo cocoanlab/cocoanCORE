@@ -8,7 +8,9 @@
 addpath(genpath('/Volumes/sein/github/cocoanlab/cocoanCORE'));
 
 %% 1) visualization of first gradient map of the principal gradient axis made by BrainSpace toolbox
-gradient_mask = fmri_data(which('ten_prinicpal_gradients_volumn_DE.nii')); % in cocoanCORE/Canocial_brains
+
+%gradient_mask = fmri_data(which('ten_prinicpal_gradients_volumn_DE.nii')); % in cocoanCORE/Canocial_brains (n=56)
+gradient_mask = fmri_data( which('Volumetric_hcp_gradients_GSP_90_DE_wholebrain_2mm.nii')); % in cocoanCORE/Canocial_brains (n=1000)
 first_gradient_mask = gradient_mask.get_wh_image(1); %1~10
 first_gradient_mask.dat = first_gradient_mask.dat - min(first_gradient_mask.dat); % just for visualization 
 % color

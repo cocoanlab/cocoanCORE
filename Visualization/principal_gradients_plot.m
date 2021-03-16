@@ -5,9 +5,11 @@ function results = principal_gradients_plot(thresh_img, varargin)
 %                   STILL WORKING (Be careful).                             
 %                          
 % =========================================================================
-% Draw line plot using principal_gradients_axis map. The map was made using
-% fifty-six resting-state connectivity (3mm whole-brain voxel-level
-% connectivity).
+% Draw line plot using principal_gradients_axis map. The principal gradient
+% map was calulated using HCP datasets (n = about 1000, 2mm whole-brain
+% voxel-level connectivity). 
+%  * You can use the previous one (3mm whole-brain voxel-level
+%  connectivity) to compare. See below optional inputs. 
 %
 % :Usage:
 % ::
@@ -19,7 +21,9 @@ function results = principal_gradients_plot(thresh_img, varargin)
 %   **results:**
 %       results.bins_Percentage: 
 %       results.bins_nVox:
-%:
+%   **plot (component 1) :** 
+%       x axis: transmodal area <      ---------    > unimodal area 
+%       y axis: percentage 
 % :Inputs:
 %
 %   **thresh_img:**
@@ -33,6 +37,9 @@ function results = principal_gradients_plot(thresh_img, varargin)
 %
 %
 % :Optional Inputs: Enter keyword followed by variable with values
+% 
+%   **'n56':**
+%        use previous gradient map (3mm, n=56) 
 % 
 %   **'other_comp':**
 %        use other gradient component (default: 1 ; first gradients) 
@@ -61,15 +68,22 @@ function results = principal_gradients_plot(thresh_img, varargin)
 %   results = principal_gradients_plot(thresh_img,'other_comp',numComp,'numBins',10); 
 %
 
+% History (yyyymmdd):
+% 20210316 change prinipal_gradient_map 
+%          (n=56, 3mm connectivity, one dataset -> n=1000, 2mm connectivity, HCP)
+%
+% The principal 
 
 
 %% Default option 
 doplot = true;
-pgmapdir = which('ten_prinicpal_gradients_volumn_DE.nii'); 
+pgmapdir = which('Volumetric_hcp_gradients_GSP_90_DE_wholebrain_2mm.nii');  % made using 2mm HCP whole-brain voxel-level connectivity (n=1000)
+mapn56 = false;
 comp_num = 1; % first gradient axis (transmoal - unimodal)
 numBins  = 20;
-mCol = hsv(5);
-mCol = mCol(randperm(5),:);
+nImgs = numel(thresh_img);
+mCol = hsv(nImgs);
+mCol = mCol(randperm(nImgs),:);
 %mCol = [245 23 123]./255;
 use_exist = false;
 %% Parse argumetns 
@@ -77,8 +91,9 @@ for i = 1:length(varargin)
     if ischar(varargin{i})
         switch lower(varargin{i})
             % functional commands
-%             case {'gradientmap'}
-%                 pgmapdir = varargin{i+1};
+            case {'n56'}
+                mapn56 = true;
+                pgmapdir = which('ten_prinicpal_gradients_volumn_DE.nii');  % made using 3mm whole-brain voxel-level connectivity (n=56)
             case {'markercolor'}
                 mCol = varargin{i+1};
             case {'noplots'}
@@ -96,17 +111,23 @@ for i = 1:length(varargin)
 end
 %% Load gradients maps 
 temp_pgmap = fmri_data(pgmapdir,which('gray_matter_mask.nii')); 
+% aligning  
 pgmap = temp_pgmap.get_wh_image(comp_num); 
+if ~mapn56    
+    pgmap.dat = pgmap.dat.*-1;
+end
+zeroidx = (pgmap.dat == 0);
+pgmap = remove_empty(pgmap, zeroidx);
 pgmap.dat = pgmap.dat - min(pgmap.dat); % make data positive
+
+
 %% Load data 
 if isobject(thresh_img) % 
     nImgs = 1;
-    pattern_data = thresh_img; 
-else 
-    nImgs = numel(thresh_img);
-    
+    pattern_data = apply_mask(thresh_img,pgmap); 
+else         
     thresh_img = thresh_img(:);
-    pattern_data = fmri_data(thresh_img, which('gray_matter_mask.nii'));
+    pattern_data = fmri_data(thresh_img, which('gray_matter_mask.nii'));    
 end
 %% compare voxel space and size 
 isdiff = compare_space(pgmap, pattern_data);
@@ -129,6 +150,7 @@ if isdiff == 1 || isdiff == 2 % diff space, not just diff voxels
     end
     pgmap = mask;
 end
+%pattern_data = apply_mask(pattern_data, pgmap);
 %% Binning
 t = [];
 voxel_percent = pgmap.prctile(0:(100./numBins):100);
