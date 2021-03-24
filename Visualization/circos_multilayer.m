@@ -229,26 +229,42 @@ end
 
 %% Calculating theta
 
+[~,~,group] = unique(group);
+gcols = gcols(unique(group),:);
+
 if laterality
     
-    before_N_group = max(group);
-    group(lat_index == 0) = before_N_group + 1;
+    [ugroup_L,~,group_L] = unique(group(lat_index == -1));
+    [ugroup_M,~,group_M] = unique(group(lat_index == 0));
+    [ugroup_R,~,group_R] = unique(group(lat_index == 1));
+    
     if ~radiological % Right is Right, Left is Left
-        group(lat_index == -1) = before_N_group*2 + 2 - group(lat_index == -1);
+        group_new = group;
+        group_new(lat_index == 1) = group_R;
+        group_new(lat_index == 0) = group_M + max(group_R);
+        group_new(lat_index == -1) = group_L + max(group_R) + max(group_M);
+        group = group_new;
+        gcols = gcols([ugroup_R; ugroup_M; ugroup_L],:);
     elseif radiological % Right is Left, Left is Right
-        group(lat_index == 1) = before_N_group*2 + 2 - group(lat_index == 1);
+        group_new = group;
+        group_new(lat_index == -1) = group_L;
+        group_new(lat_index == 0) = group_M + max(group_L);
+        group_new(lat_index == 1) = group_R + max(group_L) + max(group_M);
+        group = group_new;
+        gcols = gcols([ugroup_L; ugroup_M; ugroup_R],:);
     end
-    gcols = [gcols; gcols(end,:); flipud(gcols)];
     
 end
 
 [group_val, group_idx] = sort(group, 'ascend');
 if laterality
-    for i = (before_N_group+1):(before_N_group*2+1)
-        wh_mirror = group_val == i;
-        group_val(wh_mirror) = flipud(group_val(wh_mirror));
-        group_idx(wh_mirror) = flipud(group_idx(wh_mirror));
+    if ~radiological % Right is Right, Left is Left
+        wh_mirror = group_val > max(group_R) + max(group_M);
+    elseif radiological % Right is Left, Left is Right
+        wh_mirror = group_val > max(group_L) + max(group_M);
     end
+    group_val(wh_mirror) = flipud(group_val(wh_mirror));
+    group_idx(wh_mirror) = flipud(group_idx(wh_mirror));
 end
 
 orig_to_new_idx_mat = double(triu(logical(A),1));
@@ -272,7 +288,7 @@ N_node = size(A, 1);
 N_group = numel(unique(group));
 unit_theta = (2*pi) / (N_node * (length_region + interval_region) + N_group * interval_group);
 
-wh_interval = find(diff([group_val]) == 1); % find where group index differs = find where interval is located
+wh_interval = find(diff([group_val]) ~= 0); % find where group index differs = find where interval is located
 
 j = 0:(length_region-interval_region);
 for i = 1:N_node
