@@ -135,9 +135,14 @@ if dothreshold
             sort_perm = sort(A_perm, 'descend');
             wh_prctile = round(numel(sort_perm) * 0.20);
             thresh_perm = sort_perm(wh_prctile);
+        case 'prctile50'
+            sort_perm = sort(A_perm, 'descend');
+            wh_prctile = round(numel(sort_perm) * 0.50);
+            thresh_perm = sort_perm(wh_prctile);
+        case 'half'
+            thresh_perm = n_rep / 2;
     end
             
-    thresh_perm = double(thresh_perm) ./ n_rep;
     A_perm = [];
 end
 
@@ -155,6 +160,7 @@ A(1:n_node+1:end) = 0;
 A = double(A) ./ n_rep;
 
 if dothreshold
+    thresh_perm = double(thresh_perm) ./ n_rep;
     A = A .* double(A > thresh_perm);
 end
 
