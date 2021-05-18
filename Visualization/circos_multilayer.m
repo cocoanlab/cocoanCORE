@@ -106,7 +106,7 @@ function circos_multilayer(A, varargin)
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 % ..
 
-group = ones(size(A,1));
+group = ones(size(A,1), 1);
 gcols = [0.5 0.5 0.5];
 rotate_angle = 0;
 add_layer = {};
