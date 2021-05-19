@@ -221,21 +221,22 @@ if do_surface && ~do_all
     end
     view(90, 0);
     
-    if do_medial_surface 
-        axes('Position', axes_positions{3});
-        out = draw_surface(r, out, 'left');
-        %surface_light(gca);
-        camlight(-90,-20); axis vis3d;
+    if do_medial_surface
+        
+        axes_h = get(gcf, 'Children');
+        axes_new_h(1) = copyobj(axes_h(2), gcf);
+        axes_new_h(2) = copyobj(axes_h(1), gcf);
+        
+        axes(axes_new_h(1));
+        set(axes_new_h(1), 'Position', axes_positions{3});
+        set(axes_new_h(1).Children(3), 'BackFaceLighting', 'reverselit');
         view(90, 0);
         
-        axes('Position', axes_positions{4});
-        out = draw_surface(r, out, 'right');
-        if strcmp(surface_style,'veryinflated')
-            camlight(-90,-20); axis vis3d;
-        else
-            surface_light(gca);
-        end        
+        axes(axes_new_h(2));    
+        set(axes_new_h(2), 'Position', axes_positions{4});
+        set(axes_new_h(2).Children(3), 'BackFaceLighting', 'reverselit');
         view(-90, 0);
+        
     end
     
 elseif do_all

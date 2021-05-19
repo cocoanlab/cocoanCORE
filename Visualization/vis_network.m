@@ -122,6 +122,7 @@ arrow_len = 10;
 do_label = false;
 node_edge_color = 'w';
 xy = [];
+xystart = [];
 do_trans = false;
 node_lwidth = 2;
 
@@ -174,6 +175,8 @@ for i = 1:length(varargin)
                 node_edge_color = varargin{i+1};
             case {'xy'}
                 xy = varargin{i+1};
+            case {'xystart'}
+                xystart = varargin{i+1};
             case {'trans'}
                 do_trans = true;
         end
@@ -203,9 +206,17 @@ G = addnode(G, size(W,1)-max(max(i), max(j)));
 hh = figure;
 
 if doweight
-    h_graph = plot(G,'Layout','force', 'WeightEffect', 'inverse','UseGravity',dogravity); 
+    if ~isempty(xystart)
+        h_graph = plot(G, 'Layout', 'force', 'WeightEffect', 'inverse', 'UseGravity', dogravity, 'XStart', xystart(:,1), 'YStart', xystart(:,2));
+    elseif ~isempty(xystart)
+        h_graph = plot(G, 'Layout', 'force', 'WeightEffect', 'inverse', 'UseGravity', dogravity);
+    end
 else
-    h_graph = plot(G,'Layout','force','UseGravity',dogravity);
+    if ~isempty(xystart)
+        h_graph = plot(G, 'Layout', 'force', 'UseGravity', dogravity, 'XStart', xystart(:,1), 'YStart', xystart(:,2));
+    elseif ~isempty(xystart)
+        h_graph = plot(G, 'Layout', 'force', 'UseGravity', dogravity);
+    end
 end
 X = [h_graph.XData',h_graph.YData'];
 

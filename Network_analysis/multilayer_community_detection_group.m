@@ -107,33 +107,6 @@ for run_i = 1:n_run
     end
 end
 
-comm_idx = N_all.multi_module_consensus;
-comm_sorted_idx = comm_idx;
-overlap_mat = [];
-for run_i = 2:n_run
-    u_comm_before_idx = unique(comm_sorted_idx(:,run_i-1));
-    u_comm_before_idx(isnan(u_comm_before_idx)) = [];
-    u_comm_after_idx = unique(comm_idx(:,run_i));
-    u_comm_after_idx(isnan(u_comm_after_idx)) = [];
-    for u_i = 1:numel(u_comm_after_idx)
-        for u_j = 1:numel(u_comm_before_idx)
-            overlap_mat(u_j, u_i) = sum(comm_sorted_idx(:,run_i-1) == u_comm_before_idx(u_j) & comm_idx(:,run_i) == u_comm_after_idx(u_i));
-        end
-    end
-    [max_overlap_val, max_overlap_idx] = max(overlap_mat);
-    target_duplicate = find(histcounts(max_overlap_idx) > 1);
-    if ~ismepty(target_duplicate)
-        fprintf('Divergence found between run %d and %d ... \n', run_i-1, run_i);
-        source_duplicate = find(max_overlap_idx == target_duplicate);
-        [~, max_duplicate_idx] = max(max_overlap_val(source_duplicate));
-        source_duplicate(max_duplicate_idx) = [];
-    end
-    u_comm_sorted_idx = u_comm_before_idx(max_overlap_idx);
-    u_comm_sorted_idx(source_duplicate) = [1:numel(source_duplicate)] + max(u_comm_before_idx);
-    for u_i = 1:numel(u_comm_after_idx)
-        comm_sorted_idx(comm_idx(:,run_i) == u_comm_after_idx(u_i), run_i) = u_comm_sorted_idx(u_i);
-    end
-end
-N_all.multi_module_consensus_sorted = comm_sorted_idx;
+N_all.multi_module_consensus_sorted = match_community_affiliation(N_all.multi_module_consensus);
 
 end
