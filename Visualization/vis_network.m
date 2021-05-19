@@ -208,13 +208,13 @@ hh = figure;
 if doweight
     if ~isempty(xystart)
         h_graph = plot(G, 'Layout', 'force', 'WeightEffect', 'inverse', 'UseGravity', dogravity, 'XStart', xystart(:,1), 'YStart', xystart(:,2));
-    elseif ~isempty(xystart)
+    elseif isempty(xystart)
         h_graph = plot(G, 'Layout', 'force', 'WeightEffect', 'inverse', 'UseGravity', dogravity);
     end
 else
     if ~isempty(xystart)
         h_graph = plot(G, 'Layout', 'force', 'UseGravity', dogravity, 'XStart', xystart(:,1), 'YStart', xystart(:,2));
-    elseif ~isempty(xystart)
+    elseif isempty(xystart)
         h_graph = plot(G, 'Layout', 'force', 'UseGravity', dogravity);
     end
 end
