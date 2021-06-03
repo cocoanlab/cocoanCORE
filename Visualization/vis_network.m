@@ -177,6 +177,13 @@ for i = 1:length(varargin)
                 xy = varargin{i+1};
             case {'xystart'}
                 xystart = varargin{i+1};
+                if isa(xystart, 'region')
+                    xy_C = cell2mat({xystart.center}');
+                    xy_D = repmat(xy_C, 1, 1, size(xy_C,1));
+                    xy_D = xy_D - permute(xy_D, [3 2 1]);
+                    xy_D = squeeze(sum(xy_D .^ 2, 2) .^ 0.5);
+                    xystart = cmdscale(xy_D,2);
+                end
             case {'trans'}
                 do_trans = true;
         end
