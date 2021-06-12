@@ -40,6 +40,16 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %        if you want to use one color for blobs, you can specify color
 %        using this option.
 %
+%   **region_color (or region_colors):**
+%        if you want to use one color for each region, you can specify
+%        region colors using this option. The input should have the same 
+%        number of rows with the region, i.e., # region x 3
+%
+%   **custom_color (or custom_colors):**
+%        if you want to define colors for all voxels on your own, 
+%        you can specify voxel colors using this option. The input should 
+%        have the same number of rows with the voxels, i.e., # voxel x 3
+%
 %   **axial_slice_range:**
 %        followed by axial slice range in a cell
 %            e.g., 'axial_slice_range', {[-10 30]}
