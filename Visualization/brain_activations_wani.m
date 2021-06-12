@@ -130,11 +130,13 @@ function [out, o2] = brain_activations_wani(r, varargin)
 %        automatically check whether there is an input that is fmridisplay
 %        object, and reuse those montage. 
 
-global surface_style color depth poscm negcm do_color do_all all_style
+global surface_style color depth poscm negcm do_color do_all all_style do_custom_color do_region_color
 
 surface_style = 'veryinflated';
 do_color = false;
-depth = 3;
+do_custom_color = false;
+do_region_color = false;
+depth = 5; % larger depth values are better.
 do_montage = true;
 do_surface = true;
 do_medial_surface = false;
@@ -184,6 +186,17 @@ for i = 1:length(varargin)
                 disp('E.g., ''all2_xyz'', [-5 2 -35 35 -30:12:60], first four will be used as x''s and the six numbers after that');
                 disp('      will be used as z. More than 10 numbers will be ignored.');
                 disp('***************************************************************************************************************');
+            case {'custom_color', 'custom_colors'} % surface only
+                do_custom_color = true;
+                color = varargin{i+1}; % this input should have the same 
+                                        % number of rows with the voxel
+                                        % i.e., # voxel x 3
+            case {'region_color', 'region_colors'}
+                do_region_color = true;
+                color = varargin{i+1}; % this input should have the same 
+                                        % number of rows with the region
+                                        % i.e., # region x 3
+
         end
     end
 end
@@ -196,6 +209,18 @@ s = get(0,'ScreenSize');
 
 poscm = colormap_tor([0.96 0.41 0], [1 1 0]);  % warm
 negcm = colormap_tor([.23 1 1], [0.11 0.46 1]);  % cools
+
+if do_custom_color 
+    poscm = color;
+    negcm = [];
+elseif do_region_color
+    if numel(r) ~= size(color,1)
+        error('The number of region and the rows of colors are different');
+    end
+    numVox = cat(1,r(:).numVox);
+    poscm = [repelem(color(:,1), numVox) repelem(color(:,2), numVox) repelem(color(:,3), numVox)];
+    negcm = [];
+end
 
 if do_surface && ~do_all    
     
@@ -274,7 +299,7 @@ end
 
 function o2 = brain_montage(r, vars)
 
-global color do_color
+global color do_color do_region_color
 
 % default
 
@@ -313,12 +338,18 @@ end
 o2 = removeblobs(o2);
 
 if ~do_color
-    if ~do_pruned && ~do_cmaprange
-        o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}); % A&B
-    elseif do_pruned
-        o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', [-2.8 -1.2 1.2 2.8]);
-    elseif do_cmaprange
-        o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', cmaprange);
+    if ~do_region_color
+        if ~do_pruned && ~do_cmaprange
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}); % A&B
+        elseif do_pruned
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', [-2.8 -1.2 1.2 2.8]);
+        elseif do_cmaprange
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', cmaprange);
+        end
+    elseif do_region_color
+        for ii = 1:numel(r)
+            o2 = addblobs(o2, r(ii), 'color', color(ii,:)); 
+        end
     end
 else
     o2 = addblobs(o2, r, 'color', color); % A&B
