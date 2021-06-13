@@ -214,6 +214,9 @@ for i = 1:length(varargin)
                                         
             case {'colorbar'}
                 do_colorbar = true;
+                
+            case {'prioritize_last'}
+                prioritize_last = varargin{i+1};
 
         end
     end
