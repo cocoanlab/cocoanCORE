@@ -523,24 +523,32 @@ function [actcolor, colorbar] = map_data_to_colormap_sub(datavalues, poscm, negc
         disp('Warning! NaNs in data values mapped to colors.  These will be mapped to black [0 0 0].');
     end
     
-    actcolor = zeros(length(datavalues), 3);
+    if length(datavalues) == size(poscm, 1) % do_custom_color or do_region_color
+        
+        actcolor = poscm;
+        
+    else % find color based on nearest z-value
+    
+        actcolor = zeros(length(datavalues), 3);
 
-    for i = 1:length(datavalues)
+        for i = 1:length(datavalues)
 
-    	dv = datavalues(i);
+            dv = datavalues(i);
 
-        if dv < 0
-            [mydistance, wh] = min(abs(zhc - dv), [], 2);
-            actcolor(i,:) = negcm(wh, :);
-            
-        elseif dv >= 0
-            [mydistance, wh] = min(abs(zh - dv), [], 2);
-            actcolor(i,:) = poscm(wh, :);
-            
-        else
-            % could be NaN; leave as 0
-            
+            if dv < 0
+                [mydistance, wh] = min(abs(zhc - dv), [], 2);
+                actcolor(i,:) = negcm(wh, :);
+
+            elseif dv >= 0
+                [mydistance, wh] = min(abs(zh - dv), [], 2);
+                actcolor(i,:) = poscm(wh, :);
+
+            else
+                % could be NaN; leave as 0
+
+            end
         end
+        
     end
 
 end
