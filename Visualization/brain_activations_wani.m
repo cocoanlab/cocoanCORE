@@ -389,20 +389,20 @@ switch hemisphere
         if ~do_color
             switch surface_style
                 case 'inflated'
-                    out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
+                    out.h_surf_L = cluster_surf_cocoan(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
                 case 'veryinflated'
-                    out.h_surf_L = cluster_surf(r, 'fsavg_left', depth, 'heatmap', 'colormaps', poscm, negcm);
+                    out.h_surf_L = cluster_surf_cocoan(r, 'fsavg_left', depth, 'heatmap', 'colormaps', poscm, negcm);
                 case 'veryinflated_wb'
-                    out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
+                    out.h_surf_L = cluster_surf_cocoan(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
             end
         else
             switch surface_style
                 case 'inflated'
-                    out.h_surf_L = cluster_surf(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, {color});
+                    out.h_surf_L = cluster_surf_cocoan(r ,which('surf_workbench_inflated_32k_Left.mat'), depth, {color});
                 case 'veryinflated'
-                    out.h_surf_L = cluster_surf(r, 'fsavg_left', depth, {color});
+                    out.h_surf_L = cluster_surf_cocoan(r, 'fsavg_left', depth, {color});
                 case 'veryinflated_wb'
-                    out.h_surf_L = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, {color});
+                    out.h_surf_L = cluster_surf_cocoan(r ,which('surf_workbench_very_inflated_32k_Left.mat'), depth, {color});
             end
         end
     case 'right'
@@ -410,20 +410,20 @@ switch hemisphere
         if ~do_color
             switch surface_style
                 case 'inflated'
-                    out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
+                    out.h_surf_R = cluster_surf_cocoan(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
                 case 'veryinflated'
-                    out.h_surf_R = cluster_surf(r, 'fsavg_right', depth, 'heatmap', 'colormaps', poscm, negcm);
+                    out.h_surf_R = cluster_surf_cocoan(r, 'fsavg_right', depth, 'heatmap', 'colormaps', poscm, negcm);
                 case 'veryinflated_wb'
-                    out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
+                    out.h_surf_R = cluster_surf_cocoan(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, 'heatmap', 'colormaps', poscm, negcm);
             end
         else
             switch surface_style
                 case 'inflated'
-                    out.h_surf_R = cluster_surf(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, {color});
+                    out.h_surf_R = cluster_surf_cocoan(r ,which('surf_workbench_inflated_32k_Right.mat'), depth, {color});
                 case 'veryinflated'
-                    out.h_surf_R = cluster_surf(r, 'fsavg_right', depth, {color});
+                    out.h_surf_R = cluster_surf_cocoan(r, 'fsavg_right', depth, {color});
                 case 'veryinflated_wb'
-                    out.h_surf_R = cluster_surf(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, {color});
+                    out.h_surf_R = cluster_surf_cocoan(r ,which('surf_workbench_very_inflated_32k_Right.mat'), depth, {color});
             end
         end
 end
