@@ -139,6 +139,20 @@ function [out, o2] = brain_activations_display(r, varargin)
 %        can simply provide o2 (fmridisplay object) as an input. It
 %        automatically check whether there is an input that is fmridisplay
 %        object, and reuse those montage. 
+%   **custum_color:**
+%
+%   **region_color:**
+%
+%   **prioritize_last:**
+%
+%   **colorbar:**
+%
+%
+%  Examples:
+%
+%  % gray_mask = fmri_data(which('Yeo_10networks_4mm.nii'));
+%  % load(which('Schaefer_Net_Labels_r265.mat'));
+%  % brain_activations_display(region(gray_mask, 'unique_mask_values'), 'surface_only', 'region_color', Schaefer_Net_Labels.ten_network_col);
 
 global surface_style color depth poscm negcm do_color do_all all_style do_custom_color do_region_color prioritize_last
 
