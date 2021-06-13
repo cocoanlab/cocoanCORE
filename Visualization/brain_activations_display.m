@@ -1,4 +1,4 @@
-function o2 = brain_activations_wani(r, varargin)
+function [out, o2] = brain_activations_display(r, varargin)
 
 % This function diplay brain activations on a inflated brain and few 
 % saggital, axial slices. Cocoan style activation visualization.
@@ -6,7 +6,7 @@ function o2 = brain_activations_wani(r, varargin)
 % :Usage:
 % ::
 %
-%    [out, o2] = brain_activations_wani(cl, varargin)
+%    [out, o2] = brain_activations_display(cl, varargin)
 %
 % :Inputs:
 %
@@ -15,10 +15,6 @@ function o2 = brain_activations_wani(r, varargin)
 %
 % :Optional Inputs:
 %
-%   **notinflated:**
-%        use freesurfer inflated brain with Thomas Yeo group's RF_ANTs mapping
-%        from MNI to Freesurfer. (https://doi.org/10.1002/hbm.24213)
-%
 %   **inflated:**
 %        not recommended
 %        use inflated brain. We use the 32k inflated brain surface from HCP
@@ -26,6 +22,9 @@ function o2 = brain_activations_wani(r, varargin)
 %        Q1-Q6_R440.L.inflated.32k_fs_LR.surf.gii)
 %
 %   **very_inflated (default):**
+%        recommended
+%        use freesurfer inflated brain with Thomas Yeo group's RF_ANTs mapping
+%        from MNI to Freesurfer. (https://doi.org/10.1002/hbm.24213)
 %
 %   **very_inflated_workbench:**
 %        use very inflated brain. We also use the 32k inflated brain surface 
@@ -34,13 +33,22 @@ function o2 = brain_activations_wani(r, varargin)
 %         Q1-Q6_R440.L.very_inflated.32k_fs_LR.surf.gii)
 %   
 %   **depth:**
-%        ##currently not working: becuase of the change in surface drawing method in canlab##
 %        depth for surface map, (e.g., 'depth', 4)
 %        default is 3 mm
 %
 %   **color:**
 %        if you want to use one color for blobs, you can specify color
 %        using this option.
+%
+%   **region_color (or region_colors):**
+%        if you want to use one color for each region, you can specify
+%        region colors using this option. The input should have the same 
+%        number of rows with the region, i.e., # region x 3
+%
+%   **custom_color (or custom_colors):**
+%        if you want to define colors for all voxels on your own, 
+%        you can specify voxel colors using this option. The input should 
+%        have the same number of rows with the voxels, i.e., # voxel x 3
 %
 %   **axial_slice_range:**
 %        followed by axial slice range in a cell
@@ -132,10 +140,12 @@ function o2 = brain_activations_wani(r, varargin)
 %        automatically check whether there is an input that is fmridisplay
 %        object, and reuse those montage. 
 
-global surface_style depth poscm negcm do_all all_style
+global surface_style color depth poscm negcm do_color do_all all_style do_custom_color do_region_color prioritize_last
 
 surface_style = 'veryinflated';
 do_color = false;
+do_custom_color = false;
+do_region_color = false;
 depth = 3;
 do_montage = true;
 do_surface = true;
@@ -143,14 +153,13 @@ do_medial_surface = false;
 % do_all = false;
 do_all = true;
 all_style = 'v1';
-reuse_o2 = false;
+do_colorbar = false;
+prioritize_last = true;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
             % functional commands
-            case {'notinflated'}
-                surface_style = 'notinflated';
             case {'inflated'}
                 surface_style = 'inflated';
             case {'very_inflated'}
@@ -161,16 +170,19 @@ for i = 1:length(varargin)
             case {'color'}
                 do_color = true;
                 color = varargin{i+1};
+                prioritize_last = false;
             case {'depth'}
                 depth = varargin{i+1};
             case {'surface_only'}
                 do_montage = false;
-                do_all = false;
+                do_all = false; 
             case {'surface_all'}
                 do_medial_surface = true;
             case {'montage_only'}
                 do_surface = false;
+                do_all = false; 
             case {'all'}
+                do_all = true;
                 all_style = 'v1';
                 disp('***************************************************************************************************************');
                 disp('You selected to ''all'' option. It will draw four sagittal slices and eight axial slices with two surface maps.');
@@ -179,6 +191,7 @@ for i = 1:length(varargin)
                 disp('      will be used as z. More than 12 numbers will be ignored.');
                 disp('***************************************************************************************************************');
             case {'all2'}
+                do_all = true;
                 all_style = 'v2';     
                 disp('***************************************************************************************************************');
                 disp('You selected to ''all2'' option. It will draw four sagittal slices and six axial slices with two surface maps.');
@@ -186,23 +199,46 @@ for i = 1:length(varargin)
                 disp('E.g., ''all2_xyz'', [-5 2 -35 35 -30:12:60], first four will be used as x''s and the six numbers after that');
                 disp('      will be used as z. More than 10 numbers will be ignored.');
                 disp('***************************************************************************************************************');
+            case {'custom_color', 'custom_colors'} % surface only
+                do_custom_color = true;
+                color = varargin{i+1}; % this input should have the same 
+                                        % number of rows with the voxel
+                                        % i.e., # voxel x 3
+                prioritize_last = false;
+            case {'region_color', 'region_colors'}
+                do_region_color = true;
+                color = varargin{i+1}; % this input should have the same 
+                                        % number of rows with the region
+                                        % i.e., # region x 3
+                prioritize_last = false;
+                                        
+            case {'colorbar'}
+                do_colorbar = true;
+
         end
-    elseif isa(varargin{i}, 'fmridisplay')
-        reuse_o2 = true;
-        o2 = varargin{i};
     end
 end
 
-if ~reuse_o2
-    o2 = fmridisplay('overlay',which('keuken_2014_enhanced_for_underlay.img'));
-end
-
+out = [];
+o2 = [];
 s = get(0,'ScreenSize');
 
 %% RIGHT
 
 poscm = colormap_tor([0.96 0.41 0], [1 1 0]);  % warm
 negcm = colormap_tor([.23 1 1], [0.11 0.46 1]);  % cools
+
+if do_custom_color 
+    poscm = color;
+    negcm = [];
+elseif do_region_color
+    if numel(r) ~= size(color,1)
+        error('The number of region and the rows of colors are different');
+    end
+    numVox = cat(1,r(:).numVox);
+    poscm = [repelem(color(:,1), numVox) repelem(color(:,2), numVox) repelem(color(:,3), numVox)];
+    negcm = [];
+end
 
 if do_surface && ~do_all    
     
@@ -214,32 +250,36 @@ if do_surface && ~do_all
         axes_positions = {[0.02 0 .46 1], [0.52 0 .46 1]};
     end
     
-    axh = axes('Position', axes_positions{1});
-    o2 = draw_surface(o2, axh, 'left', 'lateral');
-    camlight(-90,-20); axis vis3d; 
+    axes('Position', axes_positions{1});
+    out = draw_surface(r, out, 'left');
+    surface_light(gca);
     view(-90, 0);
     
-    axh = axes('Position', axes_positions{2});
-    o2 = draw_surface(o2, axh, 'right', 'lateral');
-    camlight(90,20); axis vis3d; 
+    axes('Position', axes_positions{2});
+    out = draw_surface(r, out, 'right');
+    if strcmp(surface_style,'veryinflated')
+        surface_light(gca);
+    else
+        camlight(-90,-20); axis vis3d;
+    end
     view(90, 0);
     
-    if do_medial_surface 
-        axh = axes('Position', axes_positions{3});
-        o2 = draw_surface(o2, axh, 'left', 'medial');
-        camlight(90,20); axis vis3d; 
+    if do_medial_surface
+        
+        axes_h = get(gcf, 'Children');
+        axes_new_h(1) = copyobj(axes_h(2), gcf);
+        axes_new_h(2) = copyobj(axes_h(1), gcf);
+        
+        axes(axes_new_h(1));
+        set(axes_new_h(1), 'Position', axes_positions{3});
+        set(axes_new_h(1).Children(3), 'BackFaceLighting', 'reverselit');
         view(90, 0);
         
-        axh = axes('Position', axes_positions{4});
-        o2 = draw_surface(o2, axh, 'right', 'medial');
-        camlight(-90,-20); axis vis3d; 
+        axes(axes_new_h(2));    
+        set(axes_new_h(2), 'Position', axes_positions{4});
+        set(axes_new_h(2).Children(3), 'BackFaceLighting', 'reverselit');
         view(-90, 0);
-    end
-    
-    for i = 1:numel(o2.surface)
-        o2.surface{i}.object_handle.AmbientStrength = 0.4;
-        o2.surface{i}.object_handle.DiffuseStrength = 0.5;
-        o2.surface{i}.object_handle.SpecularStrength = 0.03;
+        
     end
     
 elseif do_all
@@ -254,39 +294,43 @@ elseif do_all
             axes_positions = {[0.85 0 .13 1], [0.02 0 .13 1]};
     end
     
-    axh = axes('Position', axes_positions{1});
-    o2 = draw_surface(o2, axh, 'right', 'lateral');
-    camlight(90,20); axis vis3d; 
+    axes('Position', axes_positions{1});
+    out = draw_surface(r, out, 'right');
+    surface_light(gca);
     view(90, 0);
     
-    axh = axes('Position', axes_positions{2});
-    o2 = draw_surface(o2, axh, 'left', 'lateral');
-    camlight(-90,-20); axis vis3d; 
+    axes('Position', axes_positions{2});
+    out = draw_surface(r, out, 'left');
+    surface_light(gca);
     view(-90, 0);
     
-    for i = 1:numel(o2.surface)
-        o2.surface{i}.object_handle.AmbientStrength = 0.4;
-        o2.surface{i}.object_handle.DiffuseStrength = 0.5;
-        o2.surface{i}.object_handle.SpecularStrength = 0.03;
-    end
 end
 
 %% Montage: canlab visualization
 
 % disply overlay
-if do_montage && ~reuse_o2
-    o2 = draw_montage(o2, varargin);
+if do_montage
+    o2 = brain_montage(r, varargin);
 end
 
-%% addblobs
+end
+
+function o2 = brain_montage(r, vars)
+
+global color do_color do_region_color
+
+% default
 
 dooutline = false;
 do_pruned = false;
+reuse_o2 = false;
 do_cmaprange = false;
 
-for i = 1:length(varargin)
-    if ischar(varargin{i})
-        switch varargin{i}
+% parsing varargin
+
+for i = 1:length(vars)
+    if ischar(vars{i})
+        switch vars{i}
             % functional commands
             case {'outline'}
                 dooutline = true;
@@ -294,20 +338,36 @@ for i = 1:length(varargin)
                 do_pruned = true;
             case {'cmaprange'}
                 do_cmaprange = true;
-                cmaprange = varargin{i+1};
+                cmaprange = vars{i+1};
         end
+    else
+        if isa(vars{i}, 'fmridisplay')
+            reuse_o2 = true;
+            o2 = vars{i};
+        end 
     end
 end
 
+if ~reuse_o2 
+    o2 = draw_montage(vars);
+end
+
+%%
 o2 = removeblobs(o2);
 
 if ~do_color
-    if ~do_pruned && ~do_cmaprange
-        o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}); % A&B
-    elseif do_pruned
-        o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', [-2.8 -1.2 1.2 2.8]);
-    elseif do_cmaprange
-        o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', cmaprange);
+    if ~do_region_color
+        if ~do_pruned && ~do_cmaprange
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}); % A&B
+        elseif do_pruned
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', [-2.8 -1.2 1.2 2.8]);
+        elseif do_cmaprange
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', cmaprange);
+        end
+    elseif do_region_color
+        for ii = 1:numel(r)
+            o2 = addblobs(o2, r(ii), 'color', color(ii,:)); 
+        end
     end
 else
     o2 = addblobs(o2, r, 'color', color); % A&B
@@ -317,52 +377,68 @@ if dooutline, o2 = addblobs(o2, r, 'outline', 'linewidth', 2, 'outline_color', [
 
 end
 
-function o2 = draw_surface(o2, axh, hemisphere, orientation)
+function surface_light(gca)
 
-global surface_style % color depth poscm negcm do_color
+out.h = get(gca, 'children');
+set(out.h(2), 'BackFaceLighting', 'lit')
+camlight(-90,-20);
+axis vis3d;
+
+end
+
+function out = draw_surface(r, out, hemisphere)
+
+global surface_style color depth poscm negcm do_color prioritize_last
 
 switch hemisphere
     
     case 'left'
         
-        switch surface_style
-            case 'notinflated'
-                h = add_surface(which('surf_freesurf_inflated_Left.mat'));
-                ras = load(which('lh.avgMapping_allSub_RF_ANTs_MNI152_orig_to_fsaverage.mat'));
-                h.Vertices = ras.ras';            
-            case 'inflated'
-                h = add_surface(which('surf_workbench_inflated_32k_Left.mat'));
-            case 'veryinflated'
-                h = add_surface(which('surf_freesurf_inflated_Left.mat'));
-            case 'veryinflated_wb'
-                h = add_surface(which('surf_workbench_very_inflated_32k_Left.mat'));
+        if ~do_color
+            switch surface_style
+                case 'inflated'
+                    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_inflated_32k_Left.mat'), 'depth', depth, 'colormaps', poscm, negcm, 'prioritize_last', prioritize_last);
+                case 'veryinflated'
+                    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(r, 'underlay', 'fsavg_left', 'depth', depth, 'colormaps', poscm, negcm, 'prioritize_last', prioritize_last);
+                case 'veryinflated_wb'
+                    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_very_inflated_32k_Left.mat'), 'depth', depth, 'colormaps', poscm, negcm, 'prioritize_last', prioritize_last);
+            end
+        else
+            switch surface_style
+                case 'inflated'
+                    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_inflated_32k_Left.mat'), 'depth', depth, 'color', color, 'prioritize_last', prioritize_last);
+                case 'veryinflated'
+                    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(r, 'underlay', 'fsavg_left', 'depth', depth, 'color', color, 'prioritize_last', prioritize_last);
+                case 'veryinflated_wb'
+                    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_very_inflated_32k_Left.mat'), 'depth', depth, 'color', color, 'prioritize_last', prioritize_last);
+            end
         end
-        
     case 'right'
-        switch surface_style
-            case 'notinflated'
-                h = add_surface(which('surf_freesurf_inflated_Right.mat'));
-                ras = load(which('rh.avgMapping_allSub_RF_ANTs_MNI152_orig_to_fsaverage.mat'));
-                h.Vertices = ras.ras';
-            case 'inflated'
-                h = add_surface(which('surf_workbench_inflated_32k_Right.mat'));
-            case 'veryinflated'
-                h = add_surface(which('surf_freesurf_inflated_Right.mat'));
-            case 'veryinflated_wb'
-                h = add_surface(which('surf_workbench_very_inflated_32k_Right.mat'));
+        
+        if ~do_color
+            switch surface_style
+                case 'inflated'
+                    [out.h_surf_R, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_inflated_32k_Right.mat'), 'depth', depth,  'colormaps', poscm, negcm, 'prioritize_last', prioritize_last);
+                case 'veryinflated'
+                    [out.h_surf_R, out.colorbar] = cluster_surf_cocoan(r, 'underlay', 'fsavg_right', 'depth', depth, 'colormaps', poscm, negcm, 'prioritize_last', prioritize_last);
+                case 'veryinflated_wb'
+                    [out.h_surf_R, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_very_inflated_32k_Right.mat'), 'depth', depth, 'colormaps', poscm, negcm, 'prioritize_last', prioritize_last);
+            end
+        else
+            switch surface_style
+                case 'inflated'
+                    [out.h_surf_R, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_inflated_32k_Right.mat'), 'depth', depth, 'color', color, 'prioritize_last', prioritize_last);
+                case 'veryinflated'
+                    [out.h_surf_R, out.colorbar] = cluster_surf_cocoan(r, 'underlay', 'fsavg_right', 'depth', depth, 'color', color, 'prioritize_last', prioritize_last);
+                case 'veryinflated_wb'
+                    [out.h_surf_R, out.colorbar] = cluster_surf_cocoan(r, 'underlay', which('surf_workbench_very_inflated_32k_Right.mat'), 'depth', depth, 'color', color, 'prioritize_last', prioritize_last);
+            end
         end
 end
         
-set(h,'FaceColor',[.5 .5 .5], 'FaceAlpha', 1);
-lighting gouraud;camlight right
-axis image; axis off
-lightRestoreSingle;
-
-o2.surface{end + 1} = struct('axis_handles', axh, 'direction', hemisphere, 'orientation', orientation, 'object_handle', h);
-        
 end
 
-function o2 = draw_montage(o2, vars)
+function o2 = draw_montage(vars)
 
 global do_all all_style
 
@@ -418,6 +494,8 @@ for i = 1:length(vars)
         end
     end
 end
+
+o2 = fmridisplay('overlay',which('keuken_2014_enhanced_for_underlay.img'));
 
 if ~do_all
     

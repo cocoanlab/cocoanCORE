@@ -90,6 +90,7 @@ function [c, alld] = getVertexColors_cocoan(xyz, v, actcolor, varargin)
     do_fsavg_left = false;
     do_fsavg_right = false;
     doverbose = true;
+    prioritize_last = false;
     
     % -----------------------------------------------------------------------
     % * set up input arguments
@@ -144,6 +145,9 @@ function [c, alld] = getVertexColors_cocoan(xyz, v, actcolor, varargin)
         
         elseif strcmp(varargin{i}, 'noverbose')
             doverbose = false;
+            
+        elseif strcmp(varargin{i}, 'prioritize_last')
+            prioritize_last = true;
             
         end
     end
@@ -208,7 +212,7 @@ function [c, alld] = getVertexColors_cocoan(xyz, v, actcolor, varargin)
     t1 = clock;
     if doverbose, fprintf('Main color vertices: '), end
 
-    c = change_colors(c, xyz, v, mind, cscale, actcolor, p, alphascale, doverbose);
+    c = change_colors(c, xyz, v, mind, cscale, actcolor, p, alphascale, doverbose, prioritize_last);
     drawnow();
 
 
@@ -226,7 +230,7 @@ function [c, alld] = getVertexColors_cocoan(xyz, v, actcolor, varargin)
             % pass in cell array
 
             % cc{j} is color, cscale{j+1} is scaling vals for coords
-            c = change_colors(c, vv{j}, v, mind, cscale(j+1), cc{j}, p, alphascale, doverbose);
+            c = change_colors(c, vv{j}, v, mind, cscale(j+1), cc{j}, p, alphascale, doverbose, prioritize_last);
         end
         drawnow();
     end
@@ -245,7 +249,7 @@ function [c, alld] = getVertexColors_cocoan(xyz, v, actcolor, varargin)
         if doverbose, fprintf('\nOverlap vertices: '), end
 
         cscaletmp = {ones(size(xyzb, 1), 1)};
-        c = change_colors(c, xyzb, v, mind, cscaletmp, ocol, p, alphascale, doverbose);
+        c = change_colors(c, xyzb, v, mind, cscaletmp, ocol, p, alphascale, doverbose, prioritize_last);
         drawnow();
 
         if doverbose,  fprintf('%3.0f.done in %3.0f s\n', i, etime(clock, t1)), end
@@ -266,7 +270,7 @@ function [c, alld] = getVertexColors_cocoan(xyz, v, actcolor, varargin)
         if doverbose, fprintf('\nAll overlap vertices: '), end
 
         cscaletmp = {ones(size(xyzall, 1), 1)};
-        c = change_colors(c, xyzall, v, mind, cscaletmp, acol, p, alphascale, doverbose);
+        c = change_colors(c, xyzall, v, mind, cscaletmp, acol, p, alphascale, doverbose, prioritize_last);
         drawnow();
 
         if doverbose, fprintf('%3.0f.done in %3.0f s\n', i, etime(clock, t1)), end
@@ -299,11 +303,11 @@ end
 
 
 
-function c = change_colors(c, coords, v, mind, cscale, actcolor, p, alphascale, doverbose)
+function c = change_colors(c, coords, v, mind, cscale, actcolor, p, alphascale, doverbose, prioritize_last)
 
 % c is list of colors. by default, usually [.5 .5 .5] for all colors
 % (basecolor)
-    global do_fsavg_left do_fsavg_right ras
+    global do_fsavg_left do_fsavg_right ras 
 
     if isempty(coords), if doverbose, disp('Coords is empty. Nothing to plot.'), end, return, end
 
@@ -370,24 +374,28 @@ function c = change_colors(c, coords, v, mind, cscale, actcolor, p, alphascale, 
     distmind_all = cat(2,distmind{:})';
     coords_indices_all = repelem(1:numel(idxmind),n_idx)';
     
-    % remove overlapping vertex index except for the closest ones (this
-    % works better for drawing parcellations)
-    sort_vertex_all = sortrows([vertex_indices_all distmind_all coords_indices_all],[1 2]);
-    [~, ii] = unique(sort_vertex_all(:,1), 'first');
-    x = 1:length(vertex_indices_all);
-    x(ii) = [];
-    sort_vertex_all(x,:) = [];
-    vertex_indices_all = sort_vertex_all(:,1);
-    coords_indices_all = sort_vertex_all(:,3);
     
-    % remove overlapping vertex index except for the last ones (this
-    % works better for activation maps (e.g., split colors))
-%     [~, ii] = unique(vertex_indices_all, 'last');
-%     x = 1:length(vertex_indices_all);
-%     x(ii) = [];
-%     vertex_indices_all(x) = [];
-%     coords_indices_all(x) = [];
-%     
+    if prioritize_last
+        % remove overlapping vertex index except for the last ones (this
+        % works better for activation maps (e.g., heat map))
+        [~, ii] = unique(vertex_indices_all, 'last');
+        x = 1:length(vertex_indices_all);
+        x(ii) = [];
+        vertex_indices_all(x) = [];
+        coords_indices_all(x) = [];
+        
+    else
+        % remove overlapping vertex index except for the closest ones (this
+        % works better for drawing parcellations)
+        sort_vertex_all = sortrows([vertex_indices_all distmind_all coords_indices_all],[1 2]);
+        [~, ii] = unique(sort_vertex_all(:,1), 'first');
+        x = 1:length(vertex_indices_all);
+        x(ii) = [];
+        sort_vertex_all(x,:) = [];
+        vertex_indices_all = sort_vertex_all(:,1);
+        coords_indices_all = sort_vertex_all(:,3);
+    end
+
     if length(cscale) > 0 && ~isempty(cscale{1})
         mycscale = cscale{1}(coords_indices_all,:);
     else

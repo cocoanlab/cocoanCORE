@@ -1,5 +1,7 @@
 function [out, o2] = brain_activations_wani(r, varargin)
 
+% please use brain_activations_display.m instead of this. 
+%
 % This function diplay brain activations on a inflated brain and few 
 % saggital, axial slices. Cocoan style activation visualization.
 %

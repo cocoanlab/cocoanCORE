@@ -1,4 +1,5 @@
-function [p,str] = cluster_surf_cocoan(varargin)
+function [p, colorbar, str] = cluster_surf_cocoan(r, varargin)
+
 % Surface plot of clusters on a standard brain. 
 %
 % This was from canlab core toolbox, where this function is deprecated, but
@@ -11,9 +12,9 @@ function [p,str] = cluster_surf_cocoan(varargin)
 % :Usage:
 % ::
 %
-%    [suface_handle,colorchangestring] = cluster_surf_cocoan(varargin)
+%    [suface_handle,colorchangestring] = cluster_surf_cocoan(r, P, depth, varargin)
 %
-% :Inputs:
+% :Inputs: (to be updated)
 %
 %   **regions:**
 %        region object
@@ -136,188 +137,100 @@ function [p,str] = cluster_surf_cocoan(varargin)
 %    cleanup
 % ..
 
-disp('Cluster_surf uses a type of surface rendering with cluster_surf that is deprecated')
-disp('It still functions, but the new method based on isocolors is dramatically faster')
-
 % -----------------------------------------------------------------------
 %    set up input arguments and defaults
 % -----------------------------------------------------------------------
+
 mmdeep = 10;
 cscale = 0;
-heatm = 0;
+heatm = false;
+donormalize = false; % used with colorscale
+actcolors = [];  % used with heatmap
+adjust_var = [];
 viewdeg = [135 30];
-cl = [];
+doverbose = true;
+refZ = [];
+colorbar = [];
+prioritize_last = false;
 
-P = which('surf_spm2_brain.mat');
-P = which('surf_spm2_brain_1mm.mat');
+if any(strcmp(varargin,'noverbose')), doverbose = false; end % do first
+
+P = which('surf_spm2_brain_1mm.mat'); % default
 
 % default color maps
-% These match fmridisplay:
-poscm = colormap_tor([1 .5 0], [1 1 0]);
-negcm = colormap_tor([0 0 1], [0 1 1]);
-
-actcolors = [];  % used with heatmap
-donormalize = 0; % used with colorscale
-adjust_var = [];
-
-doverbose = true;
-if any(strcmp(varargin,'noverbose')), doverbose = false; end % do first
+% These match with brain_activations_display:
+poscm = colormap_tor([0.96 0.41 0], [1 1 0]);  % warm
+negcm = colormap_tor([.23 1 1], [0.11 0.46 1]);  % cools
 
 % -----------------------------------------------------------------------
 %    optional inputs
 % -----------------------------------------------------------------------
-clind = 1;
+
 for i = 1:length(varargin)
-    
-    if isempty(varargin{i})
-        % ignore it
-        
-    elseif isstruct(varargin{i}) || isa(varargin{i}, 'region')
-        cl{clind} = varargin{i}; clind = clind+1;
-        
-    elseif iscell(varargin{i}), mycolors = varargin{i};
-        
-    elseif isstr(varargin{i})
-        
-        if strcmp(varargin{i},'noverbose'), doverbose = false;
+    if ischar(varargin{i})
+        switch varargin{i}
+            % functional commands
+            case {'depth'}
+                mmdeep = varargin{i+1};
+            case {'underlay'}
+                P = varargin{i+1};
+            case {'noverbose'}
+                doverbose = false;
+            case {'colormaps'}
+                if doverbose, disp('Using custom color maps.'); end
+                poscm = varargin{i+1}; varargin{i+1} = [];
+                negcm = varargin{i+2}; varargin{i+2} = [];
+                heatm = 1;
+            case {'colors', 'color'}
+                mycolors = varargin{i+1};
+            case {'colorscale'}
+                cscale = 1;
+            case {'normalize'}
+                donormalize = 1;
+            case {'heatmap'}
+                heatm = 1;
+            case {'refz', 'refZ'}
+                refZ = varargin{i+1};
+            case {'prioritize_last'}
+                prioritize_last = varargin{i+1};
+        end
+    end
+end
+
+% read P
+switch P
+    case {'left'}
+        P = which('surf_spm2_left.mat'); %which('surf_single_subj_grayL.mat');
+        viewdeg = [90 0];
             
-        elseif strcmp(varargin{i},'colorscale'), cscale = 1;
+    case {'right'}
+        P = which('surf_spm2_right.mat'); %which('surf_single_subj_grayR.mat');
+        viewdeg = [270 0];
             
-        elseif strcmp(varargin{i},'normalize'), donormalize = 1;
+    case {'hires left'}
+        P = which('surf_spm2_brain_left.mat'); %which('surf_single_subj_grayL.mat');
+        viewdeg = [90 0];
             
-        elseif strcmp(varargin{i},'heatmap'), heatm = 1;
+    case {'hires right'}
+        P = which('surf_spm2_brain_right.mat'); %which('surf_single_subj_grayR.mat');
+        viewdeg = [270 0];
             
-        elseif strcmp(varargin{i},'colormaps')
-            if doverbose, disp('Using custom color maps.'); end
-            poscm = varargin{i + 1}; varargin{i + 1} = [];
-            negcm = varargin{i + 2};  varargin{i + 2} = [];
-            
-        elseif  strcmp(varargin{i},'left')
-            P = which('surf_spm2_left.mat'); %which('surf_single_subj_grayL.mat');
-            viewdeg = [90 0];
-            
-        elseif  strcmp(varargin{i},'right')
-            P = which('surf_spm2_right.mat'); %which('surf_single_subj_grayR.mat');
-            viewdeg = [270 0];
-            
-        elseif  strcmp(varargin{i},'hires left')
-            P = which('surf_spm2_brain_left.mat'); %which('surf_single_subj_grayL.mat');
-            viewdeg = [90 0];
-            
-        elseif  strcmp(varargin{i},'hires right')
-            P = which('surf_spm2_brain_right.mat'); %which('surf_single_subj_grayR.mat');
-            viewdeg = [270 0];
-        elseif strcmp(varargin{i},'fsavg_right') % uses freesurfer inflated brain
+    case {'fsavg_right'} % uses freesurfer inflated brain
             % with Thomas Yeo group's RF_ANTs mapping
             % from MNI to Freesurfer. (https://doi.org/10.1002/hbm.24213)
-            P = which('surf_freesurf_inflated_Right.mat');
-            viewdeg = [270 0];
-            adjust_var = 'fsavg_right'; % varargin for getVertexColors
-        elseif strcmp(varargin{i},'fsavg_left') % uses freesurfer inflated brain
-            P = which('surf_freesurf_inflated_Left.mat');
-            viewdeg = [90 0];
-            adjust_var = 'fsavg_left'; % varargin for getVertexColors
-        else P = varargin{i};
-        end
+        P = which('surf_freesurf_inflated_Right.mat');
+        viewdeg = [270 0];
+        adjust_var = 'fsavg_right'; % varargin for getVertexColors
+            
+    case {'fsavg_left'} % uses freesurfer inflated brain
+        P = which('surf_freesurf_inflated_Left.mat');
+        viewdeg = [90 0];
+        adjust_var = 'fsavg_left'; % varargin for getVertexColors
         
-    elseif isnumeric(varargin{i}) && isscalar(varargin{i})
-        % it's a number, mm deep to render (any face within mmdeep mm of a significant voxel will
-        % be colored)
-        mmdeep = varargin{i};
-        
-    elseif any(ishandle(varargin{i})) && ~all(ishandle(varargin{i}))
-        % Note: some weird things are happening as fig handles are class
-        % double, and not recognized as figs, but are figure handles.
-        % hopefully this will work with strcmp()
-        % do nothing, but fig handles may be passed in inadvertently?
-        % sometimes passing in integers is interpreted as fig handles...
-        % For example, passing in 0 as a double is interpreted as a root
-        % graphics object. Not a good design feature of new graphics in
-        % Matlab...
-        
-        % Do nothing here. Could be all numeric input.
-        
-    elseif any(ishandle(varargin{i})) && any(strcmp(get(varargin{i}, 'Type'), 'figure'))
-        % all are handles, one is a figure
-        
-        disp('You passed in a figure handle.')
-        
-    elseif  all(ishandle(varargin{i})) && all(isa(varargin{i}, 'matlab.graphics.primitive.Patch'))  %% all(~isa(varargin{i}, 'matlab.ui.Figure'))
-        % all are handles, and patches
-        % OLD: Pre-2014:  all(ishandle(varargin{i})) && all(varargin{i} ~= round(varargin{i}))
-        if doverbose, disp('Found surface patch handles - plotting on existing surfaces.'); end
-        P = varargin{i}; % handle(s) for existing surface
-        
-        % get rid of later calls to other surfaces
-        wh = find(strcmp(varargin,'left') | strcmp(varargin,'right') | strcmp(varargin,'hires left') | strcmp(varargin,'hires right'));
-        for jj = 1:length(wh), varargin{wh(jj)} = []; end
-        
-    elseif any(ishandle(varargin{i})) && ~all(isa(varargin{i}, 'matlab.graphics.primitive.Patch'))
-        % OLD:  Pre-2014: any(ishandle(varargin{i})) && all(varargin{i} ~= round(varargin{i}))
-        % Note: some weird things are happening as fig handles are class
-        % double, and not recognized as figs, but are figure handles.
-        % hopefully this will work with strcmp()
-        if doverbose
-            disp('Found existing surface patch handles, but some are invalid.  Check handles.');
-            error('Exiting')
-        end
-        
-    elseif length(varargin{i}) > 1   % it's a vector
-        refZ = varargin{i};
-        
-    else    % no idea
-        warning('cluster_surf: Unknown input');
-        
-    end
-    
-end
+    otherwise
+        % do nothing
 
-if ~exist('cl', 'var') || isempty(cl)
-    if doverbose, disp('cluster_surf.m: No clusters to plot.  Try addbrain for brain surfaces with no activation.'); end
-    p = []; str = [];
-    return
-end
-
-if ~exist('mycolors', 'var')
-    mycolors = scn_standard_colors(length(cl));
-end
-
-if isempty(P)
-    disp(['Cannot find: ' P]);
-    P = spm_get(1,'*mat','Choose brain surface file');
-end
-
-if doverbose
-    
-    disp('cluster_surf')
-    disp('___________________________________________')
-    fprintf('\t%3.0f cluster structures entered\n',length(cl))
-    disp('  Colors are:')
-    
-    for i = 1:length(mycolors)
-        disp([' ' num2str(mycolors{i})])
-    end
-    
-end
-
-if length(mycolors) > length(cl)
-    if doverbose, disp([' overlap color is ' num2str(mycolors{length(cl)+1})]), end
-    ovlc = ['[' num2str(mycolors{length(cl)+1}) ']'];
-else
-    ovlc = '[0 1 1]';
-end
-
-if length(mycolors) > length(cl)+1 && length(cl) > 2
-    if doverbose, disp([' all overlap color is ' num2str(mycolors{length(cl)+2})]), end
-    aovlc = ['[' num2str(mycolors{length(cl)+2}) ']'];
-else
-    aovlc = '[1 1 1]';
-end
-
-%disp([' Surface stored in: ' P])
-if doverbose
-    fprintf(' Building XYZ coord list\n');
-end
+end  
 
 % -------------------------------------------------------------------------
 % * build xyz list
@@ -325,57 +238,49 @@ end
 % also get cscale values for each coordinate, and alphascale values if both
 % heatmap and colorscale options are entered
 % -------------------------------------------------------------------------
-for i = 1:length(cl) % each cell is a whole vector of cl, not a single region
     
-    xyz{i} = cat(2,cl{i}.XYZmm)';
+xyz = cat(2,r(:).XYZmm)';
+Z = cat(2,r(:).Z)';
+
+% order voxels from lowest to highest, so that peak colors
+% appear because they are plotted last
+tmp_pos = [xyz(Z>=0,:) Z(Z>=0)];
+tmp_neg = [xyz(Z<0,:) Z(Z<0)];
+
+tmp_pos = sortrows(tmp_pos,4);
+tmp_neg = sortrows(tmp_neg,4, 'descend');
+
+xyz = [tmp_pos(:,1:3); tmp_neg(:,1:3)];
+Z = [tmp_pos(:,4); tmp_neg(:,4)];
     
-    if cscale || heatm
-        for j = 1:length(cl{i})
-            if size(cl{i}(j).Z,1) > size(cl{i}(j).Z,2)
-                cl{i}(j).Z = cl{i}(j).Z';
-            end
-        end
-        Z{i} = cat(2,cl{i}.Z)';
+if cscale
+    if donormalize
+        Z = Z ./ max(Z);
+    end
+    
+    if heatm
+        % treat colorscale as alpha scaling to add transparent blobs
+        % (preserve existing surface; good for isosurface objects)
         
-        % order voxels from lowest to highest, so that peak colors
-        % appear because they are plotted last
-        tmp = [xyz{i} Z{i}];
-        tmp = sortrows(tmp,4);
-        xyz{i} = tmp(:,1:3);
-        Z{i} = tmp(:,4);1 ./ mad(abs(Z{i}));
+        Za = abs(Z);
+        a = prctile(Za, 85);  % midpoint of Z{i} defines transparency 0.5
+        b = 1./mad(Za); % multiplier for Z for sigmoid
         
-        if cscale
-            if donormalize
-                Z{i} = Z{i} ./ max(Z{i});
-            end
-            
-            if heatm
-                % treat colorscale as alpha scaling to add transparent blobs
-                % (preserve existing surface; good for isosurface objects)
-                
-                Za = abs(Z{i});
-                a = prctile(Za, 85);  % midpoint of Z{i} defines transparency 0.5
-                b = 1./mad(Za); % multiplier for Z for sigmoid
-                
-                sZ = 1 ./ (1 + exp(-b*(Za-a)));
-                
-                % fix, if all constant
-                sZ(isnan(sZ)) = 1;
-                
-                alphascale{i} = sZ;
-                
-                % this is further adusted based on radius
-                alphascale{i} = 5 * alphascale{i} ./ mmdeep^3; % should be 3?
-                %alphascale
-                
-                
-                
-            end
-            
-        else
-            % if heat map only, set mycolor{1} = [1 1 1]
-            mycolors{1} = [1 1 1];
-        end
+        sZ = 1 ./ (1 + exp(-b*(Za-a)));
+        
+        % fix, if all constant
+        sZ(isnan(sZ)) = 1;
+        
+        alphascale = sZ;
+        
+        % this is further adusted based on radius
+        alphascale = 5 * alphascale ./ mmdeep^3; % should be 3?
+    end
+    
+else
+    if heatm
+        % if heat map only, set mycolor = [1 1 1]
+        mycolors = [1 1 1];
     end
 end
 
@@ -384,21 +289,7 @@ end
 % -------------------------------------------------------------
 if heatm
     if doverbose, fprintf(' Getting heat-mapped colors\n'); end
-    if exist('refZ') == 1
-        actcolors = get_actcolors(Z, refZ, poscm, negcm);
-    else
-        actcolors = get_actcolors(Z, [], poscm, negcm);
-    end
-end
-
-% rearrange Z to map the negative peak later
-if exist('Z', 'var')
-    for i = 1:numel(Z)
-        neg_idx = Z{i}<0;
-        xyz{i}(neg_idx,:)=flipud(xyz{i}(neg_idx,:));
-        Z{i}(neg_idx)=flipud(Z{i}(neg_idx));
-        actcolors{i}(neg_idx,:)=flipud(actcolors{i}(neg_idx,:));
-    end
+    [actcolors, colorbar] = map_data_to_colormap_sub(Z, poscm, negcm, refZ);
 end
 
 % -------------------------------------------------------------------------
@@ -406,38 +297,18 @@ end
 % -------------------------------------------------------------------------
 if doverbose, fprintf(' Building color change function call\n'); end
 
-if length(cl) > 2 && exist('aovlc') == 1
-    str = ['[c,alld] = getVertexColors_cocoan(xyz{1},p,mycolors{1},[.5 .5 .5],' num2str(mmdeep) ',''ovlcolor'',' ovlc ',''allcolor'',' aovlc];
-else
-    str = ['[c,alld] = getVertexColors_cocoan(xyz{1},p,mycolors{1},[.5 .5 .5],' num2str(mmdeep) ',''ovlcolor'',' ovlc];
-end
+str = ['[c,alld] = getVertexColors_cocoan(xyz, p, mycolors, [.5 .5 .5], ' num2str(mmdeep)];
 
 if heatm
-    str = [str ',''colorscale'',actcolors{1}'];
+    str = [str ',''colorscale'',actcolors'];
     if cscale
         % treat colorscale as alpha scaling to add transparent blobs
-        str = [str ',''alphascale'',alphascale{1}'];
+        str = [str ',''alphascale'',alphascale'];
     end
 elseif cscale
     % cscale alone - treat cscale as color-mapping index for single
     % colors in actcolors
-    str = [str ',''colorscale'',Z{1}'];
-end
-
-
-for i = 2:length(cl)
-    str = [str ',''vert'',xyz{' num2str(i) '},mycolors{' num2str(i) '}'];
-    if heatm
-        str = [str ',''colorscale'',actcolors{' num2str(i) '}'];
-        if cscale
-            % treat colorscale as alpha scaling to add transparent blobs
-            str = [str ',''alphascale'',alphascale{' num2str(i) '}'];
-        end
-    elseif cscale
-        % cscale alone - treat cscale as color-mapping index for single
-        % colors in actcolors
-        str = [str ',''colorscale'',Z{' num2str(i) '}'];
-    end
+    str = [str ',''colorscale'',Z'];
 end
 
 if ~isempty(adjust_var)
@@ -448,15 +319,15 @@ if ~doverbose
     str = [str ', ''noverbose'''];
 end
 
+if prioritize_last
+    str = [str ', ''prioritize_last'''];
+end
+
 str = [str ');'];
 
-%p = P(end);
-%co = get(p, 'FaceVertexCData');
-if exist('alphascale','var')
-    alphascale{1} = alphascale{1} * 12;
+if exist('alphascale','var') % don't know what this is doing, but keep it from canlab version
+    alphascale = alphascale * 12;
 end
-%eval(str)
-%set(p, 'FaceVertexCData', co);
 
 % -------------------------------------------------------------------------
 % * run brain surface
@@ -474,7 +345,7 @@ if ishandle(P)      % no input file, use existing handle
 else
     % we have either an input file or a special string ('bg')
     if doverbose, fprintf(' Loading surface image\n'); end
-    [dtmp,ftmp,etmp]=fileparts(P);
+    [~, ~, etmp] = fileparts(P);
     
     if strcmp(etmp,'.mat')
         
@@ -504,96 +375,43 @@ else
         
         
         % this for subcortex stuff
-    elseif strcmp(P,'bg')
-        p = [];
-        myp = addbrain('caudate');p = [p myp];
-        run_colorchange(myp,str,xyz,mycolors);
-        
-        myp = addbrain('globus pallidus');p = [p myp];
-        run_colorchange(myp,str,xyz,mycolors);
-        
-        myp = addbrain('putamen');p = [p myp];
-        run_colorchange(myp,str,xyz,mycolors);
-        
-        set(myp,'FaceAlpha',1);
-        
-        axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
-        
-        
-    elseif strcmp(P,'limbic')
-        p = [];
-        
-        myp = addbrain('amygdala');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('hypothalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('hippocampus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('thalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('nucleus accumbens');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        
-        myp = addbrain('left');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        set(myp,'FaceAlpha',1);
-        
-        axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
-        
-    elseif strcmp(P,'brainstem')
-        p = [];
-        
-        myp = addbrain('thalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('hypothalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('brainstem');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        %myp = addbrain('caudate');p = [p myp];
-        %run_colorchange(myp,str,xyz, mycolors, actcolors);
+%     elseif strcmp(P,'bg') % we can make some default structures here..
+%                           % but comment out for now becuase they are
+%                           % really old
+%         p = [];
+%         myp = addbrain('caudate');p = [p myp];
+%         run_colorchange(myp,str,xyz,mycolors);
+%         
+%         myp = addbrain('globus pallidus');p = [p myp];
+%         run_colorchange(myp,str,xyz,mycolors);
+%         
+%         myp = addbrain('putamen');p = [p myp];
+%         run_colorchange(myp,str,xyz,mycolors);
+%         
+%         set(myp,'FaceAlpha',1);
+%         
+%         axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
         
         
-        view(90,10); axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
-        
-    elseif strcmp(P,'subcortex')
-        p = [];
-        
-        myp = addbrain('thalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('hypothalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('brainstem');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('amygdala');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('hippocampus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('thalamus');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('nucleus accumbens');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('caudate');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        myp = addbrain('putamen');p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        %         myp = addbrain('globus pallidus');p = [p myp];  %Seems to be missing from canonical folder
-        %         run_colorchange(myp,str,xyz, mycolors, actcolors);
-        
-        view(90,10); axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
-        
-    elseif strcmp(P,'cerebellum') || strcmp(P,'amygdala') || strcmp(P,'hypothalamus') ...
-            || strcmp(P,'thalamus') || strcmp(P,'midbrain') || strcmp(P,'caudate') ...
-            || strcmp(P,'globus pallidus') || strcmp(P,'putamen') || strcmp(P,'nucleus accumbens') ...
-            || strcmp(P,'hippocampus')
-        % this uses addbrain and works with any of its keywords
-        p = [];
-        
-        myp = addbrain(P);p = [p myp];
-        run_colorchange(myp,str,xyz, mycolors, actcolors);
-        
-        view(90,10); axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
-        
+%     elseif strcmp(P,'limbic') % we can make some default structures here..
+%         p = [];
+%         
+%         myp = addbrain('amygdala');p = [p myp];
+%         run_colorchange(myp,str,xyz, mycolors, actcolors);
+%         myp = addbrain('hypothalamus');p = [p myp];
+%         run_colorchange(myp,str,xyz, mycolors, actcolors);
+%         myp = addbrain('hippocampus');p = [p myp];
+%         run_colorchange(myp,str,xyz, mycolors, actcolors);
+%         myp = addbrain('thalamus');p = [p myp];
+%         run_colorchange(myp,str,xyz, mycolors, actcolors);
+%         myp = addbrain('nucleus accumbens');p = [p myp];
+%         run_colorchange(myp,str,xyz, mycolors, actcolors);
+%         
+%         myp = addbrain('left');p = [p myp];
+%         run_colorchange(myp,str,xyz, mycolors, actcolors);
+%         set(myp,'FaceAlpha',1);
+%         
+%         axis image; axis vis3d; lighting gouraud; lightRestoreSingle(gca)
         
     else
         error('Must input mat surf file or img file to convert to surf')
@@ -616,45 +434,116 @@ end
 end % main function
 
 
+function [actcolor, colorbar] = map_data_to_colormap_sub(datavalues, poscm, negcm, varargin)
+% Usage
+% ::
+%
+%    actcolor = map_data_to_colormap(datavaluesets, poscm, negcm, varargin)
+%
+% Given sets of data values (each cell is a row vector of data values,
+% e.g., z-scores) and color maps for positive and negative values,
+% returns mapped colors for each data value in order.
+% These colors can be used for direct plotting.
+%
+% :Inputs:
+%
+%   input 1:
+%        data values (e.g., z-scores). k data value sets, in cells.  Each cell contains row vector of data values
+%
+%   input 2/3:
+%        color maps [n x 3] for positive and negative values
+%
+%   input 4:
+%        optional: fixed range of data defining max and min colors
+%
+% :Examples:
+% ::
+%
+%    poscm = colormap_tor([0 0 0], [1 1 0]);
+%    negcm = colormap_tor([0 0 1], [0 0 0]);
+%    Z = randn(40, 1)';
+%    actcolors = map_data_to_colormap({Z}, poscm, negcm)
+%    [Z' actcolors{1}]
+%
+% ..
+% Tor Wager, Sept. 2007
+% ..
 
+    nposcolors = size(poscm, 1);
+    nnegcolors = size(negcm, 1);
 
+    % -------------------------------------------------------------
+    % determine overall data range
+    % -------------------------------------------------------------
 
+    % exactly zero values will give wrong length, so make pos. small number
+    datavalues(datavalues == 0) = 100 * eps;
+    
+    posvalues = datavalues(datavalues > 0);
+    negvalues = datavalues(datavalues < 0);
+   
+    if ~isempty(posvalues)
 
-function actcolor = get_actcolors(datavaluesets, refZ, poscm, negcm)
+        zrange = [min(posvalues) max(posvalues)];
 
-actcolor = map_data_to_colormap(datavaluesets, poscm, negcm, refZ);
+        % input fixed data range for max and min colors
+        if ~isempty(varargin) && ~isempty(varargin{1})
+            zrange = varargin{1}(1:2);
+
+        end
+
+        zh =  linspace(zrange(1),zrange(2),nposcolors);
+
+        if isempty(zh), zh = [1 1 0]; end   % only one element?
+        
+        colorbar.pos = [zh' poscm]; 
+    end
+
+    if ~isempty(negvalues)
+        zrangec = [min(negvalues) max(negvalues)];
+
+        % input fixed data range for max and min colors
+        if ~isempty(varargin) && ~isempty(varargin{1})
+            zrangec = varargin{1}(3:4);
+        end
+
+        zhc =  linspace(zrangec(1),zrangec(2),nnegcolors);
+
+        if isempty(zhc), zhc = [0 0 1]; end   % only one element?
+        
+        colorbar.neg = [zhc' negcm]; 
+    end
+    
+
+    % -------------------------------------------------------------
+    % find color for each xyz
+    % -------------------------------------------------------------
+    
+    if sum(isnan(datavalues))
+        disp('Warning! NaNs in data values mapped to colors.  These will be mapped to black [0 0 0].');
+    end
+    
+    actcolor = zeros(length(datavalues), 3);
+
+    for i = 1:length(datavalues)
+
+    	dv = datavalues(i);
+
+        if dv < 0
+            [mydistance, wh] = min(abs(zhc - dv), [], 2);
+            actcolor(i,:) = negcm(wh, :);
+            
+        elseif dv >= 0
+            [mydistance, wh] = min(abs(zh - dv), [], 2);
+            actcolor(i,:) = poscm(wh, :);
+            
+        else
+            % could be NaN; leave as 0
+            
+        end
+    end
 
 end
-
-
-
-
-function run_colorchange(myp, str, xyz, mycolors, actcolors)
-
-set(myp,'FaceAlpha',1);
-
-
-for i = 1:length(myp)
-    p = myp(i);
-    
-    % get original color
-    origcolor = get(p,'FaceColor');
-    
-    % color change
-    eval(str);
-    
-    % change non-active back to original color
-    vdat = get(p,'FaceVertexCData');
-    wh = find(all(vdat == .5, 2));
-    vdat(wh,:) = repmat(origcolor,length(wh),1);
-    set(p,'FaceVertexCData',vdat);
-    
-end
-p = myp;
-lighting gouraud; lightRestoreSingle(gca);
-
-end
-
 
 
 
