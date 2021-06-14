@@ -309,6 +309,9 @@ handles.median = hh;
 
 set(gca, 'xtick', find(sum(isnan(x))~=size(x,1)), 'xticklabel', ' ',...
     'box', 'off',  'TickLength', [.015 .015], 'TickDir', 'out');
+set(gca, 'fontSize', font_size, 'lineWidth', line_axis, 'xlim', ...
+    [0.2 coln+.8], 'XTickMode', 'auto');
+set(gcf, 'position', [50   159   105*coln   291]);
 
 end
 
