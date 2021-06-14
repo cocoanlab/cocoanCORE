@@ -139,20 +139,39 @@ function [out, o2] = brain_activations_display(r, varargin)
 %        can simply provide o2 (fmridisplay object) as an input. It
 %        automatically check whether there is an input that is fmridisplay
 %        object, and reuse those montage. 
-%   **custum_color:**
-%
-%   **region_color:**
-%
-%   **prioritize_last:**
 %
 %   **colorbar:**
+%        Show colorbar. default: false
+%
+%   **colorbar_fontsize:**
+%        Font size of colorbar. default: 14
+%
+%   **prioritize_last:**
+%        For determining colors of each vertex, prioritize the colors of
+%        the voxels that are drawn last. Without specifying this, colors
+%        are determined based on the colors of nearest voxels.
 %
 %
 %  Examples:
 %
+%  % % Yeo 10 network, surface only
 %  % gray_mask = fmri_data(which('Yeo_10networks_4mm.nii'));
 %  % load(which('Schaefer_Net_Labels_r265.mat'));
 %  % brain_activations_display(region(gray_mask, 'unique_mask_values'), 'surface_only', 'region_color', Schaefer_Net_Labels.ten_network_col);
+%
+%  % % Yeo 10 network, surface and montage
+%  % gray_mask = fmri_data(which('Yeo_10networks_4mm.nii'));
+%  % load(which('Schaefer_Net_Labels_r265.mat'));
+%  % brain_activations_display(region(gray_mask, 'unique_mask_values'), 'all2', 'region_color', Schaefer_Net_Labels.ten_network_col);
+%
+%  % % SIIPS1 mask, surface only
+%  % SIIPS1_mask = fmri_data(which('nonnoc_v11_4_137subjmap_weighted_mean.nii'));
+%  % brain_activations_display(region(SIIPS1_mask, 'contiguous_regions'), 'surface_only', 'colorbar');
+%
+%  % % SIIPS1 mask, surface and montage
+%  % SIIPS1_mask = fmri_data(which('nonnoc_v11_4_137subjmap_weighted_mean.nii'));
+%  % brain_activations_display(region(SIIPS1_mask, 'contiguous_regions'), 'all2', 'colorbar');
+%
 
 global surface_style color depth poscm negcm do_color do_all all_style do_custom_color do_region_color prioritize_last
 
@@ -168,6 +187,7 @@ do_medial_surface = false;
 do_all = true;
 all_style = 'v1';
 do_colorbar = false;
+colorbar_fontsize = 14;
 prioritize_last = true;
 
 for i = 1:length(varargin)
@@ -228,6 +248,9 @@ for i = 1:length(varargin)
                                         
             case {'colorbar'}
                 do_colorbar = true;
+                
+            case {'colorbar_fontsize'}
+                colorbar_fontsize = varargin{i+1};
                 
             case {'prioritize_last'}
                 prioritize_last = varargin{i+1};
@@ -328,6 +351,62 @@ end
 % disply overlay
 if do_montage
     o2 = brain_montage(r, varargin);
+end
+
+%% Colorbar
+if do_colorbar
+    
+    if do_surface && ~do_all 
+        p = 0.05 * 3; % unit for determining position and size of colorbar
+        q = 0.7; % scaling factor of height: figure size of do_all is 3/2 of do_surface.
+    elseif do_all
+        p = 0.05; % unit for determining position and size of colorbar
+        q = 1; % scaling factor of height: figure size of do_all is 3/2 of do_surface.
+    end
+    
+    if isfield(out.colorbar, 'pos') && isfield(out.colorbar, 'neg')
+        sf = 1 / (1 + 2*p); % scaling factor of overall size; here two colorbars
+        cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf], ...
+            [(1+p*7/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf]};
+        cb_pos = {[(1+p*3/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf], ...
+            [(1+p*8/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf]};
+        cb_lim = {out.colorbar.pos([1 end],1), out.colorbar.neg([1 end],1)};
+        cb_map = {out.colorbar.pos(:,2:4), out.colorbar.neg(:,2:4)};
+    elseif isfield(out.colorbar, 'pos') && ~isfield(out.colorbar, 'neg')
+        sf = 1 / (1 + p); % scaling factor of overall size; here one colorbar
+        cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf]};
+        cb_pos = {[(1+p*3/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf]};
+        cb_lim = {out.colorbar.pos([1 end],1)};
+        cb_map = {out.colorbar.pos(:,2:4)};
+    elseif ~isfield(out.colorbar, 'pos') && isfield(out.colorbar, 'neg')
+        sf = 1 / (1 + p); % scaling factor of overall size; here one colorbar
+        cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf]};
+        cb_pos = {[(1+p*3/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf]};
+        cb_lim = {out.colorbar.neg([1 end],1)};
+        cb_map = {out.colorbar.neg(:,2:4)};
+    else
+        disp('No information for colorbar.');
+        return;
+    end
+    
+    fig_pos = get(gcf, 'position');
+    set(gcf, 'position', [fig_pos(1:2), fig_pos(3:4) * sf]);
+    axes_h = findobj('type', 'axes');
+    for i = 1:numel(axes_h)
+        set(axes_h, 'units', 'points');
+    end
+    set(gcf, 'position', [fig_pos(1:3), fig_pos(4) * sf]);
+    for i = 1:numel(axes_h)
+        set(axes_h, 'units', 'normalized');
+    end
+    for i = 1:numel(cb_ax_pos)
+        cb_ax = axes('Position', cb_ax_pos{i});
+        axis off;
+        colormap(cb_ax, cb_map{i});
+        caxis(cb_lim{i});
+        colorbar('Position', cb_pos{i}, 'AxisLocation', 'in', 'Tickdirection', 'out', 'TickLength', 0.015, 'FontSize', colorbar_fontsize);
+    end
+
 end
 
 end
