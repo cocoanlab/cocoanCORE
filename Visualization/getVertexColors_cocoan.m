@@ -330,33 +330,35 @@ function c = change_colors(c, coords, v, mind, cscale, actcolor, p, alphascale, 
     else
         smallv = v;
     end
-    smallv(wh | wh2,:) = [];     % vertices--restricted list
-
-    if doverbose, fprintf('%3.0f\n', size(whverts, 1)); end
-
-    if isempty(smallv), return, end
-
-    % select coords that are close to surface vertices5
-    % coords, cscale{1}, and alphascale{1} all have same indices
-    % ---------------------------------------------------------------------
-    cmax = max(smallv, [], 1);
-    cmin = min(smallv, [], 1);
-    if doverbose, fprintf('%3.0f coords.  selecting: ', size(coords, 1)); end
     
-    % omit wh and wh2 - outside scope of this coord set
-    wh = any(coords - repmat(cmax, size(coords, 1), 1) > mind, 2);
-    wh2 = any(repmat(cmin, size(coords, 1), 1) - coords > mind, 2);
-    
-    % if cscale is matrix, must select these values of cscale as well!
-    if length(cscale) > 0 && size(cscale{1}, 1) == size(coords, 1)
-        cscale{1}(wh | wh2,:) = [];
-    end
-    
-    if length(alphascale) > 0 && size(alphascale{1}, 1) == size(coords, 1)
-        alphascale{1}(wh | wh2,:) = [];
-    end
-    
-    coords(wh | wh2,:) = [];
+    % OLD: Now we don't need this
+    %     smallv(wh | wh2,:) = [];     % vertices--restricted list
+    %
+    %     if doverbose, fprintf('%3.0f\n', size(whverts, 1)); end
+    %
+    %     if isempty(smallv), return, end
+    %
+    %     % select coords that are close to surface vertices5
+    %     % coords, cscale{1}, and alphascale{1} all have same indices
+    %     % ---------------------------------------------------------------------
+    %     cmax = max(smallv, [], 1);
+    %     cmin = min(smallv, [], 1);
+    %     if doverbose, fprintf('%3.0f coords.  selecting: ', size(coords, 1)); end
+    %
+    %     % omit wh and wh2 - outside scope of this coord set
+    %     wh = any(coords - repmat(cmax, size(coords, 1), 1) > mind, 2);
+    %     wh2 = any(repmat(cmin, size(coords, 1), 1) - coords > mind, 2);
+    %
+    %     % if cscale is matrix, must select these values of cscale as well!
+    %     if length(cscale) > 0 && size(cscale{1}, 1) == size(coords, 1)
+    %         cscale{1}(wh | wh2,:) = [];
+    %     end
+    %
+    %     if length(alphascale) > 0 && size(alphascale{1}, 1) == size(coords, 1)
+    %         alphascale{1}(wh | wh2,:) = [];
+    %     end
+    %
+    %     coords(wh | wh2,:) = [];
     
     if isempty(coords), return, end
 
