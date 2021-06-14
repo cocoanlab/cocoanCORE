@@ -358,14 +358,14 @@ if do_colorbar
     
     if do_surface && ~do_all 
         p = 0.05 * 3; % unit for determining position and size of colorbar
-        q = 0.7; % scaling factor of height: figure size of do_all is 3/2 of do_surface.
+        q = 0.7; % scaling factor of height: figure size of do_all is hi
     elseif do_all
-        p = 0.05; % unit for determining position and size of colorbar
-        q = 1; % scaling factor of height: figure size of do_all is 3/2 of do_surface.
+        p = 0.05;
+        q = 1;
     end
     
     if isfield(out.colorbar, 'pos') && isfield(out.colorbar, 'neg')
-        sf = 1 / (1 + 2*p); % scaling factor of overall size; here two colorbars
+        sf = 1 / (1 + 2*p);
         cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf], ...
             [(1+p*7/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf]};
         cb_pos = {[(1+p*3/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf], ...
@@ -373,13 +373,13 @@ if do_colorbar
         cb_lim = {out.colorbar.pos([1 end],1), out.colorbar.neg([1 end],1)};
         cb_map = {out.colorbar.pos(:,2:4), out.colorbar.neg(:,2:4)};
     elseif isfield(out.colorbar, 'pos') && ~isfield(out.colorbar, 'neg')
-        sf = 1 / (1 + p); % scaling factor of overall size; here one colorbar
+        sf = 1 / (1 + p);
         cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf]};
         cb_pos = {[(1+p*3/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf]};
         cb_lim = {out.colorbar.pos([1 end],1)};
         cb_map = {out.colorbar.pos(:,2:4)};
     elseif ~isfield(out.colorbar, 'pos') && isfield(out.colorbar, 'neg')
-        sf = 1 / (1 + p); % scaling factor of overall size; here one colorbar
+        sf = 1 / (1 + p);
         cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf]};
         cb_pos = {[(1+p*3/5)*sf, (1-q*0.6*sf)/2, (p*1/5)*sf, q*0.6*sf]};
         cb_lim = {out.colorbar.neg([1 end],1)};
