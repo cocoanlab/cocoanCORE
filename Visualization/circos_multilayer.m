@@ -38,13 +38,19 @@ function circos_multilayer(A, varargin)
 %   - laterality         laterality index for circos plot (usually for cortex)
 %                        -1: Left, 1: Right, 0: No laterality
 %   - radiological       laterality display in radiological convention. (default: neurological)
-%   - conn_color         color value of connections. [number of connections X 3]
+%   - alpha_fun          mapping rule for alpha value of connections.
+%                        if conn_alpha is specified, this option will not be used.                         
+%                        (default: ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5)
+%   - width_fun          mapping rule for width value of connections.
+%                        if conn_width is specified, this option will not be used.
+%                        (default: (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25)
+%   - conn_color         color value of connections. [connections X 3] or [regions X regions X 3]
 %                        (default: [255,0,0]./255 for positive w, [10,150,255]./255 for negative w)
-%   - conn_alpha         alpha value of connections. [number of connections X 1]
-%                        (default: ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5 )
-%   - conn_width         width value of connections. [number of connections X 1]
-%                        (default: (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25 )
-%   - conn_order         order of drawing connections. [number of connections X 1]
+%   - conn_alpha         alpha value of connections. [connections X 1] or [regions X regions]
+%                        (default: based on alpha_fun)
+%   - conn_width         width value of connections. [connections X 1] or [regions X regions]
+%                        (default: based on width_fun)
+%   - conn_order         order of drawing connections. [connections X 1] or [regions X regions]
 %                        (default: order from find() function )
 %   - each_patch_color   specify color of each patches(only for single patch
 %                        ([number of nodes X 3])
@@ -114,6 +120,8 @@ do_region_label = false;
 region_names_size = 6;
 laterality = false;
 radiological = false;
+alpha_fun = @(x) ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5;
+width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
 sep_pos_neg = false;
 length_region = 10;
 interval_region = 0;
@@ -181,16 +189,34 @@ for i = 1:length(varargin)
                 lat_index = varargin{i+1};
             case {'radiological'}
                 radiological = true;
+            case {'alpha_fun'}
+                conn_color = varargin{i+1};
+            case {'width_fun'}
+                conn_color = varargin{i+1};
             case {'conn_color'}
                 conn_color = varargin{i+1};
+                sz = size(conn_color);
+                if numel(sz) == 3 && sz(1) == sz(2)
+                    conn_color = conn_color(repmat(triu(true(sz(1),sz(2)), 1), 3));
+                    conn_color = reshape(conn_color, [], 3);
+                end
             case {'conn_alpha'}
                 conn_alpha = varargin{i+1};
+                sz = size(conn_alpha);
+                if sz(1) == sz(2) && sz(1:2) > 1
+                    conn_alpha = conn_alpha(triu(true(sz(1),sz(2)), 1));
+                end
             case {'conn_width'}
                 conn_width = varargin{i+1};
+                sz = size(conn_width);
+                if sz(1) == sz(2) && sz(1:2) > 1
+                    conn_width = conn_width(triu(true(sz(1),sz(2)), 1));
+                end
             case {'conn_order'}
                 conn_order = varargin{i+1};
-                if iscolumn(conn_order)
-                    conn_order = conn_order';
+                sz = size(conn_order);
+                if sz(1) == sz(2) && sz(1:2) > 1
+                    conn_order = conn_order(triu(true(sz(1),sz(2)), 1));
                 end
             case {'each_patch_color'}
                 patch_cmap = varargin{i+1};
@@ -384,14 +410,12 @@ else
 end
 
 if ~exist('conn_alpha', 'var')
-    alpha_fun = @(x) ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5;
     conn_alpha = alpha_fun(w);
 else
     conn_alpha = conn_alpha(orig_to_new_idx);
 end
 
 if ~exist('conn_width', 'var')
-    width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
     conn_width = width_fun(w);
 else
     conn_width = conn_width(orig_to_new_idx);
@@ -402,7 +426,7 @@ if ~exist('conn_order', 'var')
 else
     conn_order = conn_order(orig_to_new_idx);
 end
-
+if iscolumn(conn_order); conn_order = conn_order'; end
 
 for i = conn_order
     
