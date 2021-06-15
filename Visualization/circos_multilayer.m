@@ -38,10 +38,10 @@ function circos_multilayer(A, varargin)
 %   - laterality         laterality index for circos plot (usually for cortex)
 %                        -1: Left, 1: Right, 0: No laterality
 %   - radiological       laterality display in radiological convention. (default: neurological)
-%   - alpha_fun          mapping rule for alpha value of connections.
+%   - alpha_fun          function handle of mapping rule for alpha value of connections.
 %                        if conn_alpha is specified, this option will not be used.                         
 %                        (default: ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5)
-%   - width_fun          mapping rule for width value of connections.
+%   - width_fun          function handle of mapping rule for width value of connections.
 %                        if conn_width is specified, this option will not be used.
 %                        (default: (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25)
 %   - conn_color         color value of connections. [connections X 3] or [regions X regions X 3]
@@ -190,32 +190,32 @@ for i = 1:length(varargin)
             case {'radiological'}
                 radiological = true;
             case {'alpha_fun'}
-                conn_color = varargin{i+1};
+                alpha_fun = varargin{i+1};
             case {'width_fun'}
-                conn_color = varargin{i+1};
+                width_fun = varargin{i+1};
             case {'conn_color'}
                 conn_color = varargin{i+1};
                 sz = size(conn_color);
                 if numel(sz) == 3 && sz(1) == sz(2)
-                    conn_color = conn_color(repmat(triu(true(sz(1),sz(2)), 1), 3));
+                    conn_color = conn_color(repmat(triu(true(sz(1),sz(2)), 1), 1,1,3));
                     conn_color = reshape(conn_color, [], 3);
                 end
             case {'conn_alpha'}
                 conn_alpha = varargin{i+1};
                 sz = size(conn_alpha);
-                if sz(1) == sz(2) && sz(1:2) > 1
+                if sz(1) == sz(2) && all(sz(1:2) > 1)
                     conn_alpha = conn_alpha(triu(true(sz(1),sz(2)), 1));
                 end
             case {'conn_width'}
                 conn_width = varargin{i+1};
                 sz = size(conn_width);
-                if sz(1) == sz(2) && sz(1:2) > 1
+                if sz(1) == sz(2) && all(sz(1:2) > 1)
                     conn_width = conn_width(triu(true(sz(1),sz(2)), 1));
                 end
             case {'conn_order'}
                 conn_order = varargin{i+1};
                 sz = size(conn_order);
-                if sz(1) == sz(2) && sz(1:2) > 1
+                if sz(1) == sz(2) && all(sz(1:2) > 1)
                     conn_order = conn_order(triu(true(sz(1),sz(2)), 1));
                 end
             case {'each_patch_color'}
