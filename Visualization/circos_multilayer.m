@@ -18,11 +18,12 @@ function circos_multilayer(A, varargin)
 %   - group              group assignment of nodes. ex) [1,1,1,2,2,2,3,4], ...
 %   - group_color        RGB color values for each group. [groups X 3]
 %   - rotate             rotate circos plot counter-clockwise. (degree)
-%   - length_ratio       relative ratio between [length of region patch,
-%                        interval between region path, interval between
-%                        groups]. (default: [10,1,3])
+%   - length_ratio       relative length ratio between
+%                        [region, interval between region, interval between groups]. (default: [1,0,1])
 %   - patch_edge_alpha   alpha value for edge of region patch. (default: 0.5)
 %   - patch_edge_color   color value for edge of region patch. (default: [0.5 0.5 0.5])
+%   - patch_size_coef    size for region path. (default: 0.05)
+%   - patch_resolution   number of sides for region patch. (default: 10)
 %   - add_layer          add additional layers, specified by following key-value pairs.
 %                        (e.g., 'add_layer', {'layer', deg_cent, 'color', deg_cent_cols})
 %                        the values followed by 'layer' will be presented
@@ -115,6 +116,13 @@ function circos_multilayer(A, varargin)
 group = ones(size(A,1), 1);
 gcols = [0.5 0.5 0.5];
 rotate_angle = 0;
+length_region = 1;
+interval_region = 0;
+interval_group = 1;
+patch_edge_alpha = 0.5;
+patch_edge_color = [0.5 0.5 0.5];
+patch_size_coef = 0.05;
+patch_resolution = 10;
 add_layer = {};
 do_region_label = false;
 region_names_size = 6;
@@ -123,12 +131,6 @@ radiological = false;
 alpha_fun = @(x) ((abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x)))).^4.5;
 width_fun = @(x) (abs(x) - min(abs(x))) ./ (max(abs(x)) - min(abs(x))) * 2.25 + 0.25;
 sep_pos_neg = false;
-length_region = 10;
-interval_region = 0;
-interval_group = 10;
-patch_edge_alpha = 0.5;
-patch_edge_color = [0.5 0.5 0.5];
-patch_size_coef = 0.05;
 layer = {};
 
 default_col_names = { ...
@@ -177,6 +179,10 @@ for i = 1:length(varargin)
                 patch_edge_alpha = varargin{i+1};
             case {'patch_edge_color'}
                 patch_edge_color = varargin{i+1};
+            case {'patch_size_coef'}
+                patch_size_coef = varargin{i+1};
+            case {'patch_resolution'}
+                patch_resolution = varargin{i+1};
             case {'add_layer'}
                 add_layer = varargin{i+1};
             case {'region_names'}
@@ -316,17 +322,17 @@ unit_theta = (2*pi) / (N_node * (length_region + interval_region) + N_group * in
 
 wh_interval = find(diff([group_val]) ~= 0); % find where group index differs = find where interval is located
 
-j = 0:(length_region-interval_region);
+j = [0 length_region];
 for i = 1:N_node
     
     range_theta{i} = -(unit_theta * j) + pi/2 + deg2rad(rotate_angle);
-    j = j + length_region;
+    range_theta{i} = linspace(range_theta{i}(1), range_theta{i}(2), patch_resolution); 
+    j = j + length_region + interval_region;
     if ismember(i, wh_interval)
         j = j + interval_group; % interval
     end
     
 end
-
 
 %% Draw circular sectors
 
