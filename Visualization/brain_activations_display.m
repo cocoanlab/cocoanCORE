@@ -253,7 +253,7 @@ for i = 1:length(varargin)
                 colorbar_fontsize = varargin{i+1};
                 
             case {'prioritize_last'}
-                prioritize_last = varargin{i+1};
+                prioritize_last = true;
 
         end
     end
