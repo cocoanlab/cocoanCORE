@@ -82,6 +82,21 @@ function [p, colorbar, str] = cluster_surf_cocoan(r, varargin)
 %
 %        color [0 1 1] (cyan) is reserved for the overlap color btwn cluster sets.
 %
+%   **'do_fsavg_left' OR 'fsavg_right':**
+%        - if an existing surface handle, especially based on 'fsavg_left' or 'fsavg_right'
+%          was fed as the 'underlay', there is no chance to get this information.
+%          By specifying this option, this function use 'ras' coordinates (based on RF-ANTs)
+%          though 'fsavg_left' or 'fsavg_right' underlay is not used.
+%
+%   **'colormaps':**
+%        - followed by custom [colors x 3] matrices for positive colors
+%          and negative colors.
+%        - matlab can create some: e.g., colormap summer, jet, etc.
+%          others can be created with colormap_tor.m
+%
+%        color [0 1 1] (cyan) is reserved for the overlap color btwn cluster sets.
+%
+%
 % :Examples:
 % ::
 %
@@ -193,6 +208,10 @@ for i = 1:length(varargin)
                 refZ = varargin{i+1};
             case {'prioritize_last'}
                 prioritize_last = varargin{i+1};
+            case {'do_fsavg_left'}
+                adjust_var = 'fsavg_left'; % varargin for getVertexColors
+            case {'do_fsavg_right'}
+                adjust_var = 'fsavg_right'; % varargin for getVertexColors
         end
     end
 end
