@@ -12,47 +12,49 @@ function [p, colorbar, str] = cluster_surf_cocoan(r, varargin)
 % :Usage:
 % ::
 %
-%    [suface_handle,colorchangestring] = cluster_surf_cocoan(r, P, depth, varargin)
+%    [p, colorbar, str] = cluster_surf_cocoan(r, varargin)
 %
-% :Inputs: (to be updated)
+% :Inputs:
 %
-%   **regions:**
+%   **r:**
 %        region object
 %
-%   **COLORS:**
-%       cell array of colors for each cluster: {[1 0 0] [0 1 0] [0 0 1]}
-%       if number of colors specified is greater than number of clusters
-%       structures entered, n+1 and n+2 colors are overlap of 2 and overlap
-%       of all clusters, respectively.
+%   **'depth':**
+%        depth for surface map, (e.g., 'depth', 4)
+%        default is 3 mm
 %
-%   **SURFACE MAT FILE:**
-%       file name of mat file containing brain surface vertices and faces
-%       as created with isosurface.
+%   **'underlay':**
+%       specify underlay. this can be either
+%       1) 'left', 'right', 'hires left', ''hires right': SPM-based surface
+%       2) 'fsavg_left', 'fsavg_right': freesurfer fsaverage surface
+%       3) custom mat file containing brain surface vertices and faces
+%       4) existing surface handle
+%          N.B. if fsavg surface was used, consider specifying 'do_fsavg_left' or 'do_fsavg_right'
 %
-%   **SPECIAL SURFACE KEYWORDS:**
-%        special string: 'bg' 'hipp' (hcmp,thal,amy)
-%        number of mm to plot from surface (mmdeep)
+%   **'noverbose':**
+%        no verbose output
 %
-%          - Special keywords for sets of surfaces are:
-%            left, right, bg, limbic, cerebellum, brainstem
+%   **'colormaps':**
+%        - followed by custom [colors x 3] matrices for positive colors
+%          and negative colors.
+%        - matlab can create some: e.g., colormap summer, jet, etc.
+%          others can be created with colormap_tor.m
 %
-%          - Other keywords: 'left' 'right' 'amygdala' 'thalamus' 'hippocampus' '
-%            'midbrain'  'caudate'   'globus pallidus'  'putamen'  'nucleus accumbens'
-%             'hypothalamus' 'cerebellum'
+%        color [0 1 1] (cyan) is reserved for the overlap color btwn cluster sets.
 %
-%   **EXISTING SURFACE HANDLE(S):**
-%        handles for surface patches, created,
-%        e.g., with addbrain.m.  This lets you be very flexible in the
-%        surfaces you image onto.
-%
+%   **'colors' OR 'color':**
+%        - followed by custom [colors x 3] matrices for single color.
+%        
 %   **'colorscale':**
 %        This scales colors by Z-scores of voxels if used
 %          - Uses input color, unless also used with 'heatmap'
 %          - Z scores should be in ROW vector
-%          - use with 'normalize' to scale Z-scores between -1 and 1
 %          - will also create transparent effects, mixing
 %            blob color with existing surface color in linear
 %            proportion to Z-scores
+%
+%   **'normalize':**
+%        This scales color Z-scores between -1 and 1
 %
 %   **'heatmap':**
 %        Map Z-scores to surface colors
@@ -64,82 +66,31 @@ function [p, colorbar, str] = cluster_surf_cocoan(r, varargin)
 %            in which color maps you apply.
 %          - if 'colorscale' is also used, will produce transparent blobs.
 %
-%   **REFERENCE RANGE:**
+%   **'refz' OR 'refZ':**
 %        reference Z-scores range, [zmin_act zmax_act
 %        zmax_negact zmin_negact], e.g., [0 5 -5 0], use only
 %        with 'heatmap' option
 %        to get refZ from clusters, try:
 %        ::
-%
 %            clZ = cat(2,clusters.Z);
 %            refZ = [min(clZ(clZ > 0)) max(clZ) min(clZ(clZ < 0)) min(clZ)];
 %
-%   **'colormaps':**
-%        - followed by custom [colors x 3] matrices for positive colors
-%          and negative colors.
-%        - matlab can create some: e.g., colormap summer, jet, etc.
-%          others can be created with colormap_tor.m
+%   **'prioritize_last':**
+%        For determining colors of each vertex, prioritize the colors of
+%        the voxels that are drawn last. Without specifying this, colors
+%        are determined based on the colors of nearest voxels.
 %
-%        color [0 1 1] (cyan) is reserved for the overlap color btwn cluster sets.
-%
-%   **'do_fsavg_left' OR 'fsavg_right':**
+%   **'do_fsavg_left' OR 'do_fsavg_right':**
 %        - if an existing surface handle, especially based on 'fsavg_left' or 'fsavg_right'
 %          was fed as the 'underlay', there is no chance to get this information.
 %          By specifying this option, this function use 'ras' coordinates (based on RF-ANTs)
 %          though 'fsavg_left' or 'fsavg_right' underlay is not used.
 %
-%   **'colormaps':**
-%        - followed by custom [colors x 3] matrices for positive colors
-%          and negative colors.
-%        - matlab can create some: e.g., colormap summer, jet, etc.
-%          others can be created with colormap_tor.m
-%
-%        color [0 1 1] (cyan) is reserved for the overlap color btwn cluster sets.
-%
-%
 % :Examples:
 % ::
 %
-%    P = 'C:\tor_scripts\3DheadUtility\canonical_brains\surf_single_subj_T1_gray.mat';
-%    cluster_surf(tcl,acl,P,10,{[0 1 0] [1 0 0]},'colorscale','heatmap')
+%    [out.h_surf_L, out.colorbar] = cluster_surf_cocoan(region(which('nonnoc_v11_4_137subjmap_weighted_mean.nii')), 'underlay', 'fsavg_left', 'depth', 3, 'heatmap');
 %
-%    or P = h (surface handle) to use current surface in figure, and refZ
-%    cluster_surf(tcl,acl,h,[3 5 -5 -3],10,{[0 1 0] [1 0 0]},'colorscale','heatmap')
-%
-% :More examples:
-% ::
-%
-%    cluster_surf(cl,2,'heatmap');     % brain surface.  vertices colored @2 mm
-%    cluster_surf(cl,2,'bg','heatmap');    % heatmap on basal ganglia
-%    cluster_surf(cl,5,'left','heatmap');  % heatmap on left surface @5 mm
-%    cluster_surf(cl,2,'right','heatmap');
-%
-%    % A multi-color, multi-threshold display on the cerebellum
-%    colors = {[1 1 0] [1 .5 0] [1 .3 .3]};
-%    tor_fig;
-%    sh = cluster_surf(cl{3},colors(3),5,'cerebellum');
-%    cluster_surf(cl{2},colors(2),5,sh);
-%    cluster_surf(cl{1},colors(1),5,sh);
-%
-%    % Custom colormaps:
-%    create_figure('Brain Surface'); cluster_surf(cl, 2, 'heatmap','left');
-%
-%    poscm = colormap_tor([.2 .2 .4], [1 1 0], [.9 .6 .1]);  %slate to orange to yellow
-%    negcm = colormap_tor([0 0 1], [0 .3 1]);  % light blue to dark blue
-%    create_figure('Brain Surface'); cluster_surf(cl, 2, 'heatmap', 'colormaps', poscm, negcm, 'left');
-%
-%    % Single-color transparent map (green):
-%    cluster_surf(cl, 2, {[0 1 0]}, 'colorscale', p3(2), 'normalize');
-%
-% :See Also: addbrain, img2surf.m, surface() methods for objects, cluster_cutaways
-%
-%    WARNING: SURFACE_CUTAWAY, TOR_3D, AND CLUSTER_SURF ARE DEPRECATED.
-%    THEY USE AN OLDER STYLE OF SURFACE RENDERING THAT IS VERY SLOW. THEY
-%    STILL WORK, BUT OBJECT-ORIENTED CANLAB TOOLS HAVE SHIFTED TO USING
-%    ADDBRAIN.M COMBINED WITH RENDER_ON_SURFACE() METHOD, WHICH USES
-%    MATLAB'S ISOCOLORS FOR DRAMATICALLY FASTER COLOR RENDERING.
-
-
 % ..
 %    Programmers' Notes
 %    Created by Tor, a long time ago
@@ -150,6 +101,8 @@ function [p, colorbar, str] = cluster_surf_cocoan(r, varargin)
 %
 %    Jan 2020: Updated to add 'noverbose' option, minor cosmetic code
 %    cleanup
+%
+%    June 2021: Substantially modified by Wani - now 'cluster_surf_cocoan'
 % ..
 
 % -----------------------------------------------------------------------
@@ -162,6 +115,7 @@ heatm = false;
 donormalize = false; % used with colorscale
 actcolors = [];  % used with heatmap
 adjust_var = [];
+mycolors = [1 0 0];
 viewdeg = [135 30];
 doverbose = true;
 refZ = [];
