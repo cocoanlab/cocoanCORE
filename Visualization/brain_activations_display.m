@@ -403,8 +403,13 @@ if do_colorbar
         cb_ax = axes('Position', cb_ax_pos{i});
         axis off;
         colormap(cb_ax, cb_map{i});
-        caxis(cb_lim{i});
-        colorbar('Position', cb_pos{i}, 'AxisLocation', 'in', 'Tickdirection', 'out', 'TickLength', 0.015, 'FontSize', colorbar_fontsize);
+        if cb_lim{i}(1) == cb_lim{i}(2)
+            caxis([cb_lim{i}(1)-eps*100 cb_lim{i}(1)+eps*100]);
+            colorbar('Position', cb_pos{i}, 'AxisLocation', 'in', 'Tickdirection', 'out', 'TickLength', 0.015, 'FontSize', colorbar_fontsize, 'Ticks', cb_lim{i}(1));
+        else
+            caxis(cb_lim{i});
+            colorbar('Position', cb_pos{i}, 'AxisLocation', 'in', 'Tickdirection', 'out', 'TickLength', 0.015, 'FontSize', colorbar_fontsize);
+        end
     end
 
 end
