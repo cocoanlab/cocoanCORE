@@ -63,6 +63,7 @@ for t = 2:n_t
     target_duplicate = find(histcounts(max_overlap_idx) > 1);
     if ~isempty(target_duplicate)
         fprintf('\nDivergence found between time (or category) %d and %d ... \n', t-1, t);
+        source_duplicate = [];
         for dup_i = 1:numel(target_duplicate)
             source_duplicate{dup_i} = find(max_overlap_idx == target_duplicate(dup_i));
             [~, max_duplicate_idx] = max(max_overlap_val(source_duplicate{dup_i}));
