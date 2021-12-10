@@ -237,7 +237,6 @@ for alg_i = 1:numel(grad_algorithm)
             [eigvec,eigval] = eigs(M, n_components+1, 'largestabs');
             clear M;
             eigval = diag(eigval);
-            lambda = eigval(2:end);
             
             % Scale eigenvectors by the largest eigenvector.
             psi = bsxfun(@rdivide, eigvec, eigvec(:,1));
@@ -247,6 +246,7 @@ for alg_i = 1:numel(grad_algorithm)
             
             % Calculate embedding and bring the data towards output format.
             embedding = bsxfun(@times, psi(:,2:(n_components+1)), scaled_eigval(1:n_components).');
+            lambda = scaled_eigval;
             clear psi scaled_eigval;
             
     end
