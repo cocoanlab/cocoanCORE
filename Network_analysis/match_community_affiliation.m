@@ -50,31 +50,30 @@ overlap_mat = [];
 for t = 2:n_t
     u_comm_before_idx = unique(Ci_sorted(:,t-1));
     u_comm_before_idx(isnan(u_comm_before_idx)) = [];
-    u_comm_after_idx = unique(Ci(:,t));
+    u_comm_after_idx = unique(Ci_sorted(:,t));
     u_comm_after_idx(isnan(u_comm_after_idx)) = [];
     for u_i = 1:numel(u_comm_after_idx)
         for u_j = 1:numel(u_comm_before_idx)
-            overlap_mat(u_j, u_i) = sum(Ci_sorted(:,t-1) == u_comm_before_idx(u_j) & Ci(:,t) == u_comm_after_idx(u_i));
+            overlap_mat(u_j, u_i) = sum(Ci_sorted(:,t-1) == u_comm_before_idx(u_j) & Ci_sorted(:,t) == u_comm_after_idx(u_i));
         end
     end
-    [max_overlap_val, max_overlap_idx] = max(overlap_mat);
-    u_comm_sorted_idx = u_comm_before_idx(max_overlap_idx);
+    [sort_overlap_val, sort_overlap_idx] = sort(overlap_mat(:), 'descend');
+    [sort_overlap_rowidx, sort_overlap_colidx] = ind2sub(size(overlap_mat), sort_overlap_idx);
     
-    target_duplicate = find(histcounts(max_overlap_idx) > 1);
-    if ~isempty(target_duplicate)
-        fprintf('\nDivergence found between time (or category) %d and %d ... \n', t-1, t);
-        source_duplicate = [];
-        for dup_i = 1:numel(target_duplicate)
-            source_duplicate{dup_i} = find(max_overlap_idx == target_duplicate(dup_i));
-            [~, max_duplicate_idx] = max(max_overlap_val(source_duplicate{dup_i}));
-            source_duplicate{dup_i}(max_duplicate_idx) = [];
-        end
-        source_duplicate = cat(2, source_duplicate{:});
-        u_comm_sorted_idx(source_duplicate) = [1:numel(source_duplicate)] + max(u_comm_before_idx);
+    u_comm_sorted_idx = NaN(size(u_comm_after_idx));
+    wh_count = true(size(sort_overlap_val));
+    wh_count(sort_overlap_val == 0) = false;
+    while true
+        count_idx = find(wh_count, 1);
+        if isempty(count_idx); break; end
+        u_comm_sorted_idx(sort_overlap_colidx(count_idx)) = sort_overlap_rowidx(count_idx);
+        wh_count(sort_overlap_rowidx == sort_overlap_rowidx(count_idx)) = false;
+        wh_count(sort_overlap_colidx == sort_overlap_colidx(count_idx)) = false;
     end
-    
+    u_comm_sorted_idx(isnan(u_comm_sorted_idx)) = [1:sum(isnan(u_comm_sorted_idx))] + max(u_comm_before_idx);
+
     for u_i = 1:numel(u_comm_after_idx)
-        Ci_sorted(Ci(:,t) == u_comm_after_idx(u_i), t) = u_comm_sorted_idx(u_i);
+        Ci_sorted(Ci_sorted(:,t) == u_comm_after_idx(u_i), t) = u_comm_sorted_idx(u_i);
     end
 end
 
