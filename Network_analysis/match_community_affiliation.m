@@ -73,7 +73,7 @@ for t = 2:n_t
     u_comm_sorted_idx(isnan(u_comm_sorted_idx)) = [1:sum(isnan(u_comm_sorted_idx))] + max(u_comm_before_idx);
 
     for u_i = 1:numel(u_comm_after_idx)
-        Ci_sorted(Ci_sorted(:,t) == u_comm_after_idx(u_i), t) = u_comm_sorted_idx(u_i);
+        Ci_sorted(Ci(:,t) == u_comm_after_idx(u_i), t) = u_comm_sorted_idx(u_i);
     end
 end
 
