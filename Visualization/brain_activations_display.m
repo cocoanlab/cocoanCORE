@@ -188,7 +188,7 @@ do_all = true;
 all_style = 'v1';
 do_colorbar = false;
 colorbar_fontsize = 14;
-prioritize_last = true;
+prioritize_last = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
