@@ -1,4 +1,4 @@
-function h = wani_pie(X, varargin)
+function h = wani_pie_(X, varargin)
  
 % Draw a little better pie chart
 %
@@ -95,6 +95,8 @@ for i = 1:length(varargin)
         end
     end
 end
+
+X(X <= 0) = eps;
 
 if dosort
     [X, sort_idx] = sort(X, 'descend');
