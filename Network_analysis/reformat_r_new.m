@@ -101,6 +101,8 @@ function r_out = reformat_r_new(r, varargin)
 %                   - add 'group_mean' and 'group_sum' option
 %
 %    5/20/20 : J.J. - add 'threshold' option
+%
+%    8/17/23 : J.J. - add 'r2ci' option
 % ..
 
 k = 1;
@@ -118,6 +120,7 @@ do_ones_diag = false;
 do_z2r = false;
 do_group = false;
 do_threshold = false;
+do_ci = false;
 
 for i = 1:length(varargin)
     if ischar(varargin{i})
@@ -157,6 +160,9 @@ for i = 1:length(varargin)
             case {'threshold'}
                 do_threshold = true;
                 thresh_lvl = varargin{i+1};
+            case {'r2ci'}
+                do_ci = true;
+                r_n = varargin{i+1};
         end
     end
 end
@@ -200,7 +206,7 @@ if do_symmetric_avg, r_out = (r + r')./2; end
 
 if do_symmetric_sum, r_out = (r + r'); end
     
-if do_fisherz, r_out = .5 * log( (1+r) ./ (1-r) ); end
+if do_fisherz, r_out = atanh(r); end
 
 if do_z2r, r_out = tanh(r); end
 
@@ -224,4 +230,15 @@ if do_threshold
         thresh_val = prctile(r, 100 * (1 - thresh_lvl));
     end
     r_out = r .* double(r > thresh_val);
+end
+
+if do_ci
+    z = atanh(r);
+    alpha = 0.05;
+    zalpha = NaN(size(r_n));
+    zalpha(r_n>3) = (-erfinv(alpha - 1)) .* sqrt(2) ./ sqrt(r_n(r_n>3) - 3);
+%     zalpha(r_n>3) = norminv(1 - alpha/2) ./ sqrt(r_n(r_n>3) - 3);
+    r_out = {tanh(z-zalpha) tanh(z+zalpha)};
+end
+
 end
