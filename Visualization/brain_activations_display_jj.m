@@ -184,7 +184,7 @@ negcm = colormap_tor([.23 1 1], [0.11 0.46 1]);  % cools
 depth = 3;
 do_montage = true;
 do_surface = true;
-do_medial_surface = false;
+surface_list = {'LL', 'RL'};
 % do_all = false;
 do_all = true;
 all_style = 'v1';
@@ -213,8 +213,8 @@ for i = 1:length(varargin)
             case {'surface_only'}
                 do_montage = false;
                 do_all = false; 
-            case {'surface_all'}
-                do_medial_surface = true;
+            case {'surface_list'}
+                surface_list = varargin{i+1};
             case {'montage_only'}
                 do_surface = false;
                 do_all = false; 
@@ -294,52 +294,86 @@ end
 
 if do_surface && ~do_all    
     
-    set(gcf, 'position', [1 s(4)/1.5 s(3)/3 s(4)/2]); % figure size
-    
-    if do_medial_surface        
+    if size(surface_list) == [2 2]
+        set(gcf, 'position', [1 s(4)/1.5 s(3)/3 s(4)/2]); % figure size
+        surface_list = reshape(surface_list.', [], 1);
         axes_positions = {[0.02 0.5 .46 .5], [0.52 0.5 .46 .5], [0.02 0.1 .46 .5], [0.52 0.1 .46 .5]};
-    else
+    elseif size(surface_list) == [1 2]
+        set(gcf, 'position', [s(3)/4 s(4)/3*2 s(3)/2 s(4)/3]);
         axes_positions = {[0.02 0 .46 1], [0.52 0 .46 1]};
+    elseif size(surface_list) == [1 4]
+        set(gcf, 'position', [0 s(4)/3*2 s(3) s(4)/3]);
+        axes_positions = {[0.01 0 0.23 1], [0.26 0 0.23 1], [0.51 0 0.23 1], [0.76 0 0.23 1]};
     end
     
-    axes('Position', axes_positions{1});
-    out = draw_surface(r, out, 'left', varargin);
-    surface_light(gca, camlight_off);
-    view(-90, 0);
+    [~, wh_axes] = ismember({'LL', 'RL', 'LM', 'RM'}, surface_list);
     
-    axes('Position', axes_positions{2});
-    out = draw_surface(r, out, 'right', varargin);
-    if strcmp(surface_style,'veryinflated')
+    if wh_axes(1) ~= 0
+        ax(1) = axes('Position', axes_positions{wh_axes(1)});
+        out = draw_surface(r, out, 'left', varargin);
         surface_light(gca, camlight_off);
-    else
-        if ~camlight_off; camlight(-90,-20); end; axis vis3d;
+        view(-90, 0);
     end
-    view(90, 0);
     
-    if do_medial_surface
-        
-        axes_h = get(gcf, 'Children');
-        axes_new_h(1) = copyobj(axes_h(2), gcf);
-        axes_new_h(2) = copyobj(axes_h(1), gcf);
-        
-        axes(axes_new_h(1));
-        set(axes_new_h(1), 'Position', axes_positions{3});
-        if ~camlight_off
-            set(axes_new_h(1).Children(3), 'BackFaceLighting', 'reverselit');
+    if wh_axes(2) ~= 0
+        ax(2) = axes('Position', axes_positions{wh_axes(2)});
+        out = draw_surface(r, out, 'right', varargin);
+        if strcmp(surface_style,'veryinflated')
+            surface_light(gca, camlight_off);
         else
-            set(axes_new_h(1).Children(2), 'BackFaceLighting', 'reverselit');
+            if ~camlight_off; camlight(-90,-20); end; axis vis3d;
         end
         view(90, 0);
-        
-        axes(axes_new_h(2));    
-        set(axes_new_h(2), 'Position', axes_positions{4});
-        if ~camlight_off
-            set(axes_new_h(2).Children(3), 'BackFaceLighting', 'reverselit');
+    end
+    
+    if wh_axes(3) ~= 0
+        if wh_axes(1) ~= 0
+            ax(3) = copyobj(ax(1), gcf); 
+            axes(ax(3));
+            set(ax(3), 'Position', axes_positions{wh_axes(3)});
+            if ~camlight_off
+                set(ax(3).Children(3), 'BackFaceLighting', 'reverselit');
+            else
+                set(ax(3).Children(2), 'BackFaceLighting', 'reverselit');
+            end
         else
-            set(axes_new_h(2).Children(2), 'BackFaceLighting', 'reverselit');
+            ax(3) = axes('Position', axes_positions{wh_axes(3)});
+            out = draw_surface(r, out, 'left', varargin);
+            surface_light(gca, camlight_off);
+            if ~camlight_off
+                set(ax(3).Children(3), 'BackFaceLighting', 'reverselit');
+            else
+                set(ax(3).Children(2), 'BackFaceLighting', 'reverselit');
+            end
+        end
+        view(90, 0);
+    end
+    
+    if wh_axes(4) ~= 0
+        if wh_axes(2) ~= 0
+            ax(4) = copyobj(ax(2), gcf);
+            axes(ax(4));
+            set(ax(4), 'Position', axes_positions{wh_axes(4)});
+            if ~camlight_off
+                set(ax(4).Children(3), 'BackFaceLighting', 'reverselit');
+            else
+                set(ax(4).Children(2), 'BackFaceLighting', 'reverselit');
+            end
+        else
+            ax(4) = axes('Position', axes_positions{wh_axes(4)});
+            out = draw_surface(r, out, 'right', varargin);
+            if strcmp(surface_style,'veryinflated')
+                surface_light(gca, camlight_off);
+            else
+                if ~camlight_off; camlight(-90,-20); end; axis vis3d;
+            end
+            if ~camlight_off
+                set(ax(4).Children(3), 'BackFaceLighting', 'reverselit');
+            else
+                set(ax(4).Children(2), 'BackFaceLighting', 'reverselit');
+            end
         end
         view(-90, 0);
-        
     end
     
 elseif do_all
