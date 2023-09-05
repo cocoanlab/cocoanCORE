@@ -64,6 +64,17 @@ defaults.stats.fmri.hpf = 180;       % cocoanlab preference
 defaults.stats.fmri.cvi = 'none';    % cocoanlab preference
 defaults.stats.fmri.hrf = [6 16 1 1 6 0 32];
 
+% fMRI design defults: Global signal and masking 
+% (please, add this mask threshold inside of 'canlab_spm_fmri_model_job.m')
+% -------------------------------------------------------------------------
+
+% matlabbatch{1}.spm.stats.fmri_spec.global = 'None';         % CANLAB - WE DO NOT WANT GLOBAL
+% mask = which('brainmask.nii');                              % CANLAB - WE WANT WHOLE-BRAIN EXPLICIT MASK, NOT IMPLICIT
+% matlabbatch{1}.spm.stats.fmri_spec.mask = {[mask,',1']};
+matlabbatch{1}.spm.stats.fmri_spec.mthresh = -Inf; % cocoanlab preference
+
+
+
 % Mask defaults
 %==========================================================================
 defaults.mask.thresh    = -Inf;      % cocoanlab preference
