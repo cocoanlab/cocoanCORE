@@ -1,4 +1,37 @@
 function out = plot_y_yfit(yval, yfit, varargin)
+%   plot_y_yfit Create a scatter plot comparing actual values to fitted values.
+%
+%   out = plot_y_yfit(yval, yfit) creates a scatter plot comparing the actual
+%   values in yval to the fitted values in yfit. It also plots regression
+%   lines for each set of yval and yfit.
+%
+%   out = plot_y_yfit(yval, yfit, 'Name', Value) allows customization of the
+%   plot using Name-Value pairs. Recognized Name-Value pairs include:
+%
+%       'xlim'        : Custom x-axis limits. Default is computed based on yval.
+%       'ylim'        : Custom y-axis limits. Default is computed based on yfit.
+%       'position'    : Position of the figure window. Default is [1 747 218 208].
+%       'data_alpha'  : Alpha transparency for data points. Default is 1.
+%       'line_alpha'  : Alpha transparency for regression lines. Default is 1.
+%       'dotsize'     : Size of scatter plot dots. Default is 40.
+%       'random_col'  : Set to 1 to use random colors. Default is 0.
+%       'xyline'      : Set to true to plot a 45-degree (identity) line. Default is false.
+%
+%   Output:
+%       out.b : Slope of the regression line for each yval-yfit pair.
+%       out.r : Correlation between yval and yfit for each pair.
+%
+%   Assumptions and Requirements:
+%       - yval and yfit should have the same structure and dimensions.
+%       - Requires the Statistics and Machine Learning Toolbox for glmfit.
+%
+%   Example:
+%       yval = [2, 4, 5, 6, 7];
+%       yfit = [1.8, 4.1, 5.2, 5.8, 7.1];
+%       out = plot_y_yfit(yval, yfit, 'random_col', 1, 'xyline', true);
+%
+%   See also SCATTER, GLMFIT.
+
 
 % out = plot_y_yfit(yval, yfit, varargin)
 %
