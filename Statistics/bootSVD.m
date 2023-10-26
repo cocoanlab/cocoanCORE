@@ -38,9 +38,7 @@ V_b = V * A_b;
 D_b = S_b;
 U_b = R_b;
 
-if nargout > 3
-    rank_b = rank(Y(:,P_b_idx) - mean(Y(:,P_b_idx), 2));
-end
+rank_b = sum(diag(D_b) > max(size(Y)) * eps(norm(diag(D_b),inf)));
 
 if do_flip
     % sign of V and Vb should ideally be same; V.' * V_b = V.' * V * A_b = A_b;
