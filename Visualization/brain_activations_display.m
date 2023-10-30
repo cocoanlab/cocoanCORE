@@ -315,9 +315,13 @@ if do_surface && ~do_all
         set(axes_new_h(1).Children(3), 'BackFaceLighting', 'reverselit');
         view(90, 0);
         
-        axes(axes_new_h(2));    
+        axes(axes_new_h(2));
         set(axes_new_h(2), 'Position', axes_positions{4});
-        set(axes_new_h(2).Children(3), 'BackFaceLighting', 'reverselit');
+        if strcmp(surface_style,'veryinflated')
+            set(axes_new_h(2).Children(3), 'BackFaceLighting', 'reverselit');
+        else
+            set(axes_new_h(2).Children(3), 'BackFaceLighting', 'lit');
+        end        
         view(-90, 0);
         
     end
