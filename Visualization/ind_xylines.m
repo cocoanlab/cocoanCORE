@@ -16,6 +16,9 @@ function [h, stats] = ind_xylines(X, Y, varargin)
 % Optional inputs: Enter keyword followed by variable with values
 % 'ind_colors'     colors of individual lines   
 % 'ind_linewidth'  linewidth of individual lines
+% 'ind_xlim'       xlim of individual lines 
+%                   :'2sd'(default): xlim is [-mean(x{i})*2sd + mean(x{i})*2sd)]
+%                   :'minmax': xlim is [min(x{i}) max(x{i})]
 %
 % 'grp_colors'     color of a group line
 % 'grp_linewidth'  linewidth of a group line
@@ -53,6 +56,7 @@ function [h, stats] = ind_xylines(X, Y, varargin)
 ind_colors = [.5 .5 .5];
 ind_linewidth = 1;
 ind_linestyle = '-';
+ind_xlim = '2sd';
 
 dogrp = true;
 doindline = true;
@@ -83,6 +87,8 @@ for i = 1:length(varargin)
                 grp_colors = varargin{i+1};
             case {'ind_linewidth'}
                 ind_linewidth = varargin{i+1};
+            case {'ind_xlim'}
+                ind_xlim= varargin{i+1};                
             case {'grp_linewidth'}
                 grp_linewidth = varargin{i+1};
             case {'ind_linestyle'}
@@ -126,8 +132,12 @@ for i = 1:subjn
     end
     
     stats.B{i} = glmfit(X_cov{i}, Y{i});
+    if strcmp(ind_xlim,'2sd')
+        newX = [meanX'-2*stdX' meanX'+2*stdX'];
+    elseif strcmp(ind_xlim,'minmax')
+        newX = [min(X_cov{i})' max(X_cov{i})'];
+    end
     
-    newX = [meanX'-2*stdX' meanX'+2*stdX'];
     stats.newY{i} = glmval(stats.B{i}, newX, 'identity')';
     
     stats.newX{i} = newX(1,:);
