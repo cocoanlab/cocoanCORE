@@ -22,7 +22,9 @@ function [h, stats] = ind_xylines(X, Y, varargin)
 %
 % 'grp_colors'     color of a group line
 % 'grp_linewidth'  linewidth of a group line
-% 'nogrp'      no group line
+% 'grp_lim'        xlim of group line, 'grp_lim', [1 2]. Default is the
+%                   mean of xlim of individual lines. 
+% 'nogrp'          no group line
 % 'covs'           covariates 
 % 'samefig'        draw the plot in the same fig
 %
@@ -36,7 +38,7 @@ function [h, stats] = ind_xylines(X, Y, varargin)
 % % data
 % for i = 1:10, X{i} = rand(20,1); Y{i} = rand(20,1); end
 % [h, stats] = ind_xylines(X, Y, 'ind_colors', [.5 .5 .5], 'ind_linewidth', 1, ...
-%          'grp_colors', 'k', 'grp_linewidth', 2.5);
+%          'grp_colors', 'k', 'grp_linewidth', 2.5,'grp_lim',[1 6], 'ind_xlim','minmax');
 %
 % savename = 'example_ind_xylines.pdf';
 % 
@@ -63,7 +65,7 @@ doindline = true;
 grp_colors = [0 0 0];
 grp_linewidth = 2;
 grp_linestyle = '-';
-
+grp_lim = [];
 subjn = numel(X);
 
 X_cov = cell(subjn,1);
@@ -107,6 +109,8 @@ for i = 1:length(varargin)
                 dogrpseline = true;
             case {'grp_selinestyle'}
                 grp_selinestyle = varargin{i+1};
+            case {'grp_lim'}
+                grp_lim = varargin{i+1};
             case {'noind'}
                 doindline = false;
         end
@@ -153,7 +157,17 @@ end
 
 stats.glmfit_multilevel_stats = glmfit_multilevel(Y, X_cov, [], 'weighted', 'verbose');
 
-stats.grpX = mean(cat(1,stats.newX{:}));
+if ~isempty(grp_lim)
+    if isequal(size(grp_lim),[1,2])
+        stats.grpX  = grp_lim;
+    else
+        warning('invalid group xlim (e.g., [1 2]');
+        stats.grpX = mean(cat(1,stats.newX{:}));    
+    end
+else 
+    stats.grpX = mean(cat(1,stats.newX{:}));    
+end
+
 
 if isempty(covariates{1})
     stats.grpY = stats.glmfit_multilevel_stats.mean*[ones(1,2); stats.grpX];

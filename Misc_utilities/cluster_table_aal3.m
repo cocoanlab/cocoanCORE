@@ -277,7 +277,7 @@ if isfield(clusters, 'center') && exist('M') == 1 && isfield(clusters, 'from_clu
     end
 else
     disp(' ')
-    if isfield(clusters, 'shorttitle'), fprintf(fid, 'Name\t'); end
+    if isfield(clusters, 'shorttitle'), fprintf(fid, 'Name(aal)\t(canlab_atlas)\t'); end
     fprintf(fid, 'index\tx\ty\tz\tcorr\tvoxels\tvolume_mm3\tmaxstat\t');
     if isfield(clusters, 'numpeaks'), fprintf(fid, 'numpeaks\t'); end
     if isfield(clusters, 'corr_range'), fprintf(fid, 'mincorr\tmaxcorr\t'); end
@@ -342,7 +342,7 @@ else
             clusters(i).shorttitle2 = names{cl_num};
         end
         
-        if isfield(clusters, 'shorttitle'), fprintf(fid, '%s\t', clusters(i).shorttitle);end
+        if isfield(clusters, 'shorttitle'), fprintf(fid, '%s\t%s\t', clusters(i).shorttitle, clusters(i).shorttitle2);end
         fprintf(fid, '%3.0f\t%3.0f\t%3.0f\t%3.0f\t%3.2f\t%3.0f\t%3.0f\t%3.2f\t', i, x(i), y(i), z(i), cmatx(i, 1), cmatx(i, 2), cmatx(i, 2).*prod(clusters(i).voxSize), cmatx(i, 3));
         if isfield(clusters, 'numpeaks'), fprintf(fid, '%3.0f\t', cmatx(i, 15)); end
         if isfield(clusters, 'corr_range'), fprintf(fid, '%3.2f\t%3.2f\t', cmatx(i, 8), cmatx(i, 9)); end
@@ -515,9 +515,9 @@ end
 % =========
 
 %fprintf(fid, '%s\t%s\t%3.0f\t%3.0f\t%3.0f\t%s\t%3.2f\t%3.2f\t%3.2f\t%4.0f\t%4.0f\t', ...
-fprintf(fid, '%s\t%s\t%3.0f\t%3.0f\t%3.0f\t%s\t%3.2f\t%4.0f\t%4.0f\t', ...
-      ['s-' region_title1], region_title2, clusters(1).mm_center(1), clusters(1).mm_center(2), clusters(1).mm_center(3), ...
-      act_deact, abs(cmatx(i, 3)), cmatx(i, 2), cmatx(i, 2).*prod(clusters(1).voxSize));     
+fprintf(fid, '%s\t%s\t%3.0f\t%3.0f\t%3.0f\t%3.0f\t%3.2f\t%4.0f\t%4.0f\t%3.2f\t', ...
+      ['s-' region_title1], region_title2, NaN, clusters(1).mm_center(1), clusters(1).mm_center(2), clusters(1).mm_center(3), ...
+      abs(cmatx(i, 3)), cmatx(i, 2), cmatx(i, 2).*prod(clusters(1).voxSize), cmatx(i, 3));     
     
 %     ['s-' region_title1], region_title2, clusters(1).mm_center(1), clusters(1).mm_center(2), clusters(1).mm_center(3), ...
 %     act_deact, spm_u(10^-abs(cmatx(i, 3)), df, 'T'), spm_u(10^-abs(cmatx(i, 3)), df, 'Z'), abs(cmatx(i, 3)), cmatx(i, 2), cmatx(i, 2).*prod(clusters(1).voxSize)); 
