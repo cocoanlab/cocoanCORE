@@ -141,15 +141,21 @@ function [out, o2] = brain_activations_display(r, varargin)
 %        object, and reuse those montage. 
 %
 %   **colorbar:**
-%        Show colorbar. default: false
+%        Show colorbar. (default: false)
 %
 %   **colorbar_fontsize:**
-%        Font size of colorbar. default: 14
+%        Font size of colorbar. (default: 14)
 %
 %   **prioritize_last:**
 %        For determining colors of each vertex, prioritize the colors of
 %        the voxels that are drawn last. Without specifying this, colors
 %        are determined based on the colors of nearest voxels.
+%
+%   **underlay:**
+%        Now you can specify the underlay image for your montage images. 
+%        It is okay to sepcify the location of the underlay image or just use
+%        the keyword from 'canlab_get_underlay_image' such as 'fmriprep20'.
+%        (Default: keuken_2014_enhanced_for_underlay.img)
 %
 %
 %  Examples:
@@ -171,7 +177,10 @@ function [out, o2] = brain_activations_display(r, varargin)
 %  % % SIIPS1 mask, surface and montage
 %  % SIIPS1_mask = fmri_data(which('nonnoc_v11_4_137subjmap_weighted_mean.nii'));
 %  % brain_activations_display(region(SIIPS1_mask, 'contiguous_regions'), 'all2', 'colorbar');
-%
+%  
+%  % % SIIPS1 mask, underlay image (see canlab_get_underlay_image)
+%  % brain_activations_display(region(SIIPS1_mask, 'contiguous_regions'),'underlay','fmriprep20')
+%  % brain_activations_display(region(SIIPS1_mask, 'contiguous_regions'),'underlay',which('fmriprep20_template.nii.gz'))
 
 global surface_style color depth poscm negcm do_color do_all all_style do_custom_color do_region_color prioritize_last
 
