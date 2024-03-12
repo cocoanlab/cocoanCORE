@@ -562,6 +562,7 @@ squeeze_y = 30;
 squeeze_z = 20;
 fontsize = 15;
 
+underlaysty_name = 'keuken';
 for i = 1:length(vars)
     if ischar(vars{i})
         switch vars{i}
@@ -596,11 +597,15 @@ for i = 1:length(vars)
                 do_label = true;
             case {'fontsize'}
                 fontsize = vars{i+1};
+            case {'underlay'}
+                underlaysty_name = vars{i+1};
         end
     end
 end
-
-o2 = fmridisplay('overlay',which('keuken_2014_enhanced_for_underlay.img'));
+if ~contains('underlaysty_name','.nii')
+    underlaysty = canlab_get_underlay_image(underlaysty_name);
+end
+o2 = fmridisplay('overlay',underlaysty);
 
 if ~do_all
     
