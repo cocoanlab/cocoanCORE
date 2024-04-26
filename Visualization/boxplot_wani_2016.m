@@ -101,6 +101,7 @@ usesamefig = false;
 facealpha = 1;
 doviolin = 0;
 violinalpha = 0;
+violin_linewidth = 1.5;
 dodots = 0;
 dot_size = 40;
 dot_alpha = .4;
@@ -171,6 +172,8 @@ for i = 1:length(varargin)
                 do_box = false;
             case {'violin_alpha'}
                 violinalpha = varargin{i+1};
+            case {'violin_linewidth'}
+                violin_linewidth = varargin{i+1};
         end
     end
 end
@@ -271,12 +274,12 @@ if doviolin
 %         violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
 %             'x', 1:numel(x_cell), 'mc', [0.3686    0.3098    0.6353], 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5, 'bw', bw);
         h = violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
-            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', violinalpha, 'linewidth', 1.5, 'bw', bw);
+            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', violinalpha, 'linewidth', violin_linewidth, 'bw', bw);
     else
 %         violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
 %             'x', 1:numel(x_cell), 'mc', [0.3686    0.3098    0.6353], 'medc', mdcol, 'nopoints', 'facealpha', 0, 'linewidth', 1.5);
         h = violinplot(x_cell, 'facecolor', colud3, 'edgecolor', colud3, ...
-            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', violinalpha, 'linewidth', 1.5);
+            'x', 1:numel(x_cell), 'mc', 'none', 'medc', mdcol, 'nopoints', 'facealpha', violinalpha, 'linewidth', violin_linewidth);
     end
     legend off
     
