@@ -9,38 +9,43 @@ function [handles, dot_locs] = boxplot_wani_2016(x, varargin)
 %
 % Inputs:
 % -------------------------------------------------------------------------
-% x    A data matrix or cell. If there are multiple groups, you can insert
-%      a column of NaNs (matrix) or insert a empty matrix (cell) between
-%      the two groups.
-%      Also if you have multiple columns that have different number of data
-%      points (e.g., one has 50, and the other has 38), you can just use
-%      cell-type input or manually fill in NaNs (e.g., 12 NaNs).
+% x    A data matrix or cell. 
+%      For multiple groups, you can insert a column of NaNs (matrix) or
+%      insert a empty matrix (cell) between groups. Also if you have
+%      multiple columns that have different number of data points (e.g.,
+%      one has 50, and the other has 38), you can just use cell-type input
+%      or manually fill in NaNs (e.g., 12 NaNs).
 % 
 % -------------------------------------------------------------------------
 % Optional inputs: Enter keyword followed by variable with values
 %
-% ['color', 'colors', cols]     cols: matrix of 3 x n (n columns)
-% ['boxlinewidth', line_box]    scalar, linewidth for the box
-% ['boxlinecolor', boxcols]        boxcols: matrix of 3 x n (n columns)
-% ['linewidth', line_etc]       scalar, linewidth for all the lines other 
-%                               than box
-% ['axislinewidth', line_axis]  scalar, linewidth for the axis
-% ['fontsize', font_size]       scalar, font size for the axis
-% ['dorefline', ref]            scalar, draw a reference line at y = ref
-% ['reflinewidth', line_ref]    scalar, linewidth for the refline
-% ['reflinestyle', reflinestyle]   '-', '--', ':', etc.
-% ['reflinecolor', reflinecol]  reflinecol: matrix of 3 x n (n columns)
-% ['dotcolor', dotcols]         outlier dot colors: dotcols = matrix of 3 x n (n columns)
-% ['dotsize', dotsize]          outlier dot size: dotsize = scalar, size of the outlier dots
-% ['mediancolor', mdcols]       mdcols: matrix of 3 x n (n columns)
-% ['medianlinewidth', line_md]  scalar, linewidth for the median line
-% ['samefig']                   
-% ['violin']                    draw violin plot (only line)
-% ['dots']                      data dots: show data dots
-% ['dot_alpha', alpha]          data dots: alpha for data dots, default = .4
-% ['dot_size', dot_size]        data dot size: dot_size = scalar, default = 40
-% ['bw', bw]                    bandwidth of violin plot, default = [];
-% ['data_dotcolor', color]      datapoint dot colors
+% ['color', 'colors', cols]       cols, matrix of 3 x n (n columns)
+% ['boxlinewidth', line_box]      scalar, linewidth for the box
+% ['boxlinecolor', boxcols]       boxcols: matrix of 3 x n (n columns)
+% ['linewidth', line_etc]         scalar, linewidth for all the lines other than box
+% ['axislinewidth', line_axis]    scalar, linewidth for the axis
+% ['fontsize', font_size]         scalar, font size for the axis
+% ['dorefline', ref]              scalar, draw a reference line at y = ref
+% ['reflinewidth', line_ref]      scalar, linewidth for the refline
+% ['reflinestyle', reflinestyle]     '-', '--', ':', etc.
+% ['reflinecolor', reflinecol]    reflinecol, matrix of 3 x n (n columns)
+% ['dotcolor', dotcols]           outlier dot colors, 
+%                                 dotcols = matrix of 3 x n (n columns)
+% ['dotsize', dotsize]            outlier dot size, dotsize = scalar, size of the outlier dots
+% ['mediancolor', mdcols]         mdcols: matrix of 3 x n (n columns)
+% ['medianlinewidth', line_md]    scalar, linewidth for the median line
+% ['samefig']                     plots on the same figure without creating a new one
+% ['violin']                      draw violin plot (only line)
+% ['dots']                        data dots: show data dots
+% ['dot_alpha', alpha]            data dots: alpha for data dots, default = .4
+% ['dot_size', dot_size]          data dot size: dot_size = scalar, default = 40
+% ['bw', bw]                      bandwidth of violin plot, default = [];
+% ['data_dotcolor', color]        datapoint dot colors
+% ['compact']                     uses a more compact style for the box plot
+% ['nobox']                       suppresses the drawing of the box plot
+% ['violin_alpha', alpha]         scalar, sets the transparency (alpha) for
+%                                 the violin plot (Default is 0, fully opaque)
+% ['violin_linewidth', width]     scalar, linewidth of violin plot
 %
 % example:
 % 
@@ -60,13 +65,9 @@ function [handles, dot_locs] = boxplot_wani_2016(x, varargin)
 %
 % savename = 'example_box.pdf';
 % 
-% try
-%     pagesetup(gcf);
-%     saveas(gcf, savename);
-% catch
-%     pagesetup(gcf);
-%     saveas(gcf, savename);
-% end
+% pagesetup(gcf);
+% saveas(gcf, savename);
+%
 
 if iscell(x)
     coln = numel(x);
