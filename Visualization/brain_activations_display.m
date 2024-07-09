@@ -484,7 +484,7 @@ if ~do_color
         end
     end
 else
-    o2 = addblobs(o2, r, 'color', color,'partialvolumethreshold',0); % A&B
+    o2 = addblobs(o2, r, 'color', color,'partialvolumethreshold',100*eps); % A&B
 end
 
 if dooutline, o2 = addblobs(o2, r, 'outline', 'linewidth', 2, 'outline_color', [0 0 0],'partialvolumethreshold',100*eps); end
