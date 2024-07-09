@@ -472,22 +472,22 @@ o2 = removeblobs(o2);
 if ~do_color
     if ~do_region_color
         if ~do_pruned && ~do_cmaprange
-            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}); % A&B
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]},'partialvolumethreshold',100*eps); % A&B
         elseif do_pruned
-            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', [-2.8 -1.2 1.2 2.8]);
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', [-2.8 -1.2 1.2 2.8],'partialvolumethreshold',100*eps);
         elseif do_cmaprange
-            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', cmaprange);
+            o2 = addblobs(o2, r, 'splitcolor', {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}, 'cmaprange', cmaprange,'partialvolumethreshold',100*eps);
         end
     elseif do_region_color
         for ii = 1:numel(r)
-            o2 = addblobs(o2, r(ii), 'color', color(ii,:)); 
+            o2 = addblobs(o2, r(ii), 'color', color(ii,:),'partialvolumethreshold',100*eps); 
         end
     end
 else
-    o2 = addblobs(o2, r, 'color', color); % A&B
+    o2 = addblobs(o2, r, 'color', color,'partialvolumethreshold',0); % A&B
 end
 
-if dooutline, o2 = addblobs(o2, r, 'outline', 'linewidth', 2, 'outline_color', [0 0 0]); end
+if dooutline, o2 = addblobs(o2, r, 'outline', 'linewidth', 2, 'outline_color', [0 0 0],'partialvolumethreshold',100*eps); end
 
 end
 
