@@ -22,7 +22,7 @@ dat_res = {'p', 'beta', 'ste'};
 for i = 1:numel(data)
     load(fullfile(basedir, deblank(data{i})));
     
-    last_idx = max(last_idx, size(model1.p,1));
+    last_idx = min(last_idx, size(model1.p,1));    
     check_indices(end+1:end+2) = [first_idx last_idx];
     
     for ii = 1:modeln
