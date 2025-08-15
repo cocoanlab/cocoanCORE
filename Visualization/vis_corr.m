@@ -388,8 +388,8 @@ if do_display
     end
     
     if dogroupline
-        n_c = histc(sorted_group, unique(sorted_group));
-        n_c = [0, n_c];
+        n_c = histc(sorted_group, unique(sorted_group));        
+        n_c = [0; n_c(:)];
         for i = 1:(numel(n_c)-1)
             
             xy1 = [sum(n_c(1:i)) sum(n_c(1:i))]+0.5;
@@ -406,7 +406,7 @@ if do_display
     if display_group_color
         if ~display_group_mean && ~display_group_sum
             n_c = histc(sorted_group, unique(sorted_group));
-            n_c = [0, n_c];
+            n_c = [0; n_c(:)];
             set(gca, 'Clipping', 'off');
             for i = 1:(numel(n_c)-1)
                 line_base = (ticklength + tickoffset) * 2;
