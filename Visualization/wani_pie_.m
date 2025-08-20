@@ -103,13 +103,17 @@ if dosort
     cols = cols(sort_idx, :);
 end
     
-wh_pos = find(X > eps);
 h = pie(X);
 set(gcf, 'color', 'w', 'position', [360   393   389   305]);
 
-for i = 1:numel(wh_pos)
-    set(h(2*i-1), 'facecolor', cols(wh_pos(i),:), 'edgecolor', 'none');
-    hold on;
+for i = 1:numel(X)
+    if X(i) > eps
+        set(h(2*i-1), 'facecolor', cols(i,:), 'edgecolor', 'none');
+        hold on;
+    end
+    if isequal(h(2*i).String, '< 1%')
+        set(h(2*i), 'String', '');
+    end
     if dotext
         set(h(2*i), 'fontSize', fs);
     else
