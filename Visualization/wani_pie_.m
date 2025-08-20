@@ -111,7 +111,7 @@ for i = 1:numel(X)
         set(h(2*i-1), 'facecolor', cols(i,:), 'edgecolor', 'none');
         hold on;
     end
-    if isequal(h(2*i).String, '< 1%')
+    if isequal(h(2*i).String, '< 1%') % erase text for patch < 1%. Byeol added
         set(h(2*i), 'String', '');
     end
     if dotext
