@@ -103,7 +103,7 @@ if dosort
     cols = cols(sort_idx, :);
 end
     
-wh_pos = find(X > 0);
+wh_pos = find(X > eps);
 h = pie(X);
 set(gcf, 'color', 'w', 'position', [360   393   389   305]);
 
