@@ -1,4 +1,4 @@
-function [S_all, S_each] = system_segregation(A, Ci) 
+function [S_all, S_each, S_eachtype] = system_segregation(A, Ci, Ti) 
 
 % Calculate systematic segregation, which is defined as the degree to which
 % within-community connectivity is higher than between-community connectivity.
@@ -8,25 +8,28 @@ function [S_all, S_each] = system_segregation(A, Ci)
 %
 % :Usage:
 % ::
-%     [S_all, S_each] = system_segregation(A, Ci) 
+%     [S_all, S_each, S_type] = system_segregation(A, Ci, Ti) 
 %
 %
 % :Input:
 % ::
 %   - A                  Input adjacency matrix (N X N).
 %                        Z-transformed matrix is preferred.
+%   - Ci                 Community index (N X 1).
+%   - Ti                 Community type index (N_C X 1).
 %
 %
 % :Output:
 % ::  
 %   - S_all              System segregation across all communities.
 %   - S_each             System segregation for each communitiy.
+%   - S_eachtype         System segregation for each communitiy type.
 %
 %
 % :Examples:
 % ::
 %
-%    [S_all, S_each] = system_segregation(A, Ci) 
+%    [S_all, S_each, S_eachtype] = system_segregation(A, Ci, Ti)
 %
 %
 %
@@ -54,10 +57,10 @@ wh_within = Ci == Ci';
 wh_within(1:n_node+1:end) = false;
 wh_between = Ci ~= Ci';
 
-A_within = A(wh_within);
-A_between = A(wh_between);
+mA_within = mean(A(wh_within));
+mA_between = mean(A(wh_between));
 
-S_all = (mean(A_within) - mean(A_between)) / mean(A_within);
+S_all = (mA_within - mA_between) ./ mA_within;
 
 u_comm = unique(Ci);
 
@@ -69,10 +72,25 @@ for comm_i = 1:numel(u_comm) % loop through communities
     wh_between_each = wh_between;
     wh_between_each(~wh_each, :) = false;
     
-    A_within_each = A(wh_within_each);
-    A_between_each = A(wh_between_each);
+    mA_within_each(comm_i,1) = mean(A(wh_within_each));
+    mA_between_each(comm_i,1) = mean(A(wh_between_each));
+
+end
+
+S_each = (mA_within_each - mA_between_each) ./ mA_within_each;
+
+if nargin > 2
+
+    assert(numel(u_comm)==numel(Ti));
+    u_commtype = unique(Ti(Ti~=0 & ~isnan(Ti)));
     
-    S_each(comm_i,1) = (mean(A_within_each) - mean(A_between_each)) / mean(A_within_each);
+    for commtype_i = 1:numel(u_commtype) % loop through community types
+        wh_eachtype = Ti == u_commtype(commtype_i); % find index for communitiy type
+        mA_within_eachtype(commtype_i,1) = mean(mA_within_each(wh_eachtype));
+        mA_between_eachtype(commtype_i,1) = mean(mA_between_each(wh_eachtype));
+    end
+    
+    S_eachtype = (mA_within_eachtype - mA_between_eachtype) ./ mA_within_eachtype;
 
 end
 
