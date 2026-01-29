@@ -465,10 +465,10 @@ if do_display
 
         patch_x = [stair_x, size_max, size_max, 0.5, 0.5];
         patch_y = [stair_y, size_max, 0.5, 0.5, 1.5];
-        patch(patch_x, patch_y, 'w', 'edgecolor', 'w');
+        patch(patch_x, patch_y, 'w', 'edgecolor', 'w','LineWidth', stairs_width, 'LineJoin', 'round');
         
-        line([0.5, 0.5], [1.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
-        line([0.5, size_r-0.5], [size_r+0.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
+        % line([0.5, 0.5], [1.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
+        % line([0.5, size_r-0.5], [size_r+0.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
         
         border_x = [stair_x, 0.5];          
         border_y = [stair_y, size_r+0.5];   
