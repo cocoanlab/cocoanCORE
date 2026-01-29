@@ -58,7 +58,12 @@ function out = vis_corr(r, varargin)
 %   - no_triangle_line   No lines for triangle.
 %   - triangle_color     Color of triangle lines.
 %   - triangle_width     Width of triangle lines.
-%
+%   - stairs             Draw only the lower triangle with a stepped (zigzag) boundary.
+%                        By default, this includes the diagonal elements.
+%   - off_diagonal       Use with 'stairs'. If specified, the diagonal elements
+%                        are excluded from the visualization.
+%   - stairs_color       Color of the stairs boundary line (default: 'k').
+%   - stairs_width       Width of the stairs boundary line (default: 2).
 %
 % :Output:
 % ::
@@ -146,6 +151,7 @@ dolines_2nd = 1;
 dolines_out = 1;
 do_triangle = 0;
 do_stairs = 0;
+do_off_diagonal = 0;
 lcolor = [.7 .7 .7; .3 .3 .3; 0 0 0];
 lwidth = [0.5 1 1.5]; % one five outline
 
@@ -219,6 +225,8 @@ for i = 1:length(varargin)
                 lcolor = varargin{i+1};
             case {'line_width'}
                 lwidth = varargin{i+1};
+            
+            % triangle
             case {'triangle'}
                 do_triangle = 1;
             case {'no_triangle_line'}
@@ -227,6 +235,8 @@ for i = 1:length(varargin)
                 triangle_col = varargin{i+1};
             case {'triangle_width'}
                 triangle_width = varargin{i+1};
+            
+            % stairs    
             case {'stairs'}
                 do_stairs = 1;
                 do_triangle = 0; % turn off
@@ -235,6 +245,8 @@ for i = 1:length(varargin)
                 stairs_col = varargin{i+1};                
             case {'stairs_width'}                
                 stairs_width = varargin{i+1};
+            case {'off_diagonal'} 
+                do_off_diagonal = 1;
         end
     end
 end
@@ -454,22 +466,38 @@ if do_display
         end
     end
     if do_stairs
-        stair_x = 0.5; 
-        stair_y = 1.5;
-        for k = 1:size_r-1
-            stair_x = [stair_x, k+0.5, k+0.5];
-            stair_y = [stair_y, k+0.5, k+1.5];
+       if do_off_diagonal            
+            stair_x = 0.5; 
+            stair_y = 1.5;
+            for k = 1:size_r-1
+                stair_x = [stair_x, k+0.5, k+0.5];
+                stair_y = [stair_y, k+0.5, k+1.5];
+            end            
+            stair_x = [stair_x, size_r-0.5];
+            stair_y = [stair_y, size_r+0.5];
+       else            
+            stair_x = 0.5;
+            stair_y = 0.5;
+            for k = 1:size_r           
+                stair_x = [stair_x, k+0.5, k+0.5];
+                stair_y = [stair_y, k-0.5, k+0.5];
+            end
         end
+        % white
         stair_x = [stair_x, size_r-0.5];
         stair_y = [stair_y, size_r+0.5];
 
         patch_x = [stair_x, size_max, size_max, 0.5, 0.5];
         patch_y = [stair_y, size_max, 0.5, 0.5, 1.5];
-        patch(patch_x, patch_y, 'w', 'edgecolor', 'w','LineWidth', stairs_width, 'LineJoin', 'round');
+        patch(patch_x, patch_y, 'w', ...
+            'edgecolor', 'w',...
+            'LineWidth', stairs_width, ...
+            'LineJoin', 'round');
         
         % line([0.5, 0.5], [1.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
         % line([0.5, size_r-0.5], [size_r+0.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
         
+        % edge
         border_x = [stair_x, 0.5];          
         border_y = [stair_y, size_r+0.5];   
                 
