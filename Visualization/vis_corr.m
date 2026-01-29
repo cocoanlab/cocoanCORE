@@ -73,7 +73,7 @@ function out = vis_corr(r, varargin)
 %
 % savename = 'example_corr.png';
 % pagesetup(gcf);
-% saveas(gcf, savename);    
+% saveas(gcf, savename);
 %
 %
 %     Author and copyright information:
@@ -111,6 +111,9 @@ r_descript = 'input r';
 triangle_col = 'k';
 triangle_width = 5;
 
+stairs_col = 'k';
+stairs_width = 2;
+
 dogrouptick = 0;
 tickstyle = 'edge';
 tickcolor = 'k';
@@ -142,7 +145,7 @@ dolines_1st = 1;
 dolines_2nd = 1;
 dolines_out = 1;
 do_triangle = 0;
-
+do_stairs = 0;
 lcolor = [.7 .7 .7; .3 .3 .3; 0 0 0];
 lwidth = [0.5 1 1.5]; % one five outline
 
@@ -159,13 +162,13 @@ for i = 1:length(varargin)
             case {'group_linewidth'}
                 glwidth = varargin{i+1};
             case {'group_mean'}
-                display_group_mean = 1; 
+                display_group_mean = 1;
                 dogroupline = 0;
             case {'group_sum'}
                 display_group_sum = 1;
                 dogroupline = 0;
             case {'group_color'}
-                display_group_color = 1; 
+                display_group_color = 1;
                 group_color = varargin{i+1};
             case {'group_tick'}
                 dogrouptick = 1;
@@ -224,6 +227,14 @@ for i = 1:length(varargin)
                 triangle_col = varargin{i+1};
             case {'triangle_width'}
                 triangle_width = varargin{i+1};
+            case {'stairs'}
+                do_stairs = 1;
+                do_triangle = 0; % turn off
+                dolines_out = 0;
+            case {'stairs_color'}
+                stairs_col = varargin{i+1};                
+            case {'stairs_width'}                
+                stairs_width = varargin{i+1};
         end
     end
 end
@@ -239,15 +250,15 @@ end
 if display_group_mean || display_group_sum
     sorted_r = r(idx,idx);
     u_group = unique(sorted_group);
-    
+
     n_c = histc(sorted_group, u_group);
     n_c = [0; n_c];
-    
+
     for i = 1:numel(u_group)
         for j = 1:numel(u_group)
-            
+
             conn_mat = sorted_r((sum(n_c(1:i))+1):sum(n_c(1:(i+1))), (sum(n_c(1:j))+1):sum(n_c(1:(j+1))));
-            
+
             if i == j
                 non_zero_n = size(conn_mat,1).*(size(conn_mat,1)-1)./2;
                 if display_group_mean
@@ -265,10 +276,10 @@ if display_group_mean || display_group_sum
                 elseif display_group_sum
                     net_mat(i,j) = sum(sum(conn_mat));
                 end
-            end            
+            end
         end
     end
-    
+
     r = net_mat;       % new group-level r to display
     r_descript = 'group mean';
     idx = 1:size(r,1); % not to use group sorted idx
@@ -277,8 +288,8 @@ end
 if do_display
     % default: upper 97.5%, lower 2.5%
     m = max(prctile(r(:), 97.5), abs(prctile(r(:), 2.5)));
-    if m == 0 
-        tr = r; 
+    if m == 0
+        tr = r;
         tr(r==0) = [];
         m = max(prctile(tr(:), 97.5), abs(prctile(tr(:), 2.5)));
     end
@@ -286,7 +297,7 @@ if do_display
         clim = [-m m];
         clim_descript = 'default: upper 97.5%, lower 2.5%';
     end
-    
+
     % check if r is a square matrix
     if size(r,1) == size(r,2)
         size_r = size(r,1);
@@ -294,42 +305,42 @@ if do_display
         error('r should be a square matrix.');
     end
     size_max = size_r+.5;
-    
+
     % close all;
     if ~same_fig
         h = figure;
     else
         h = gcf;
     end
-    
+
     % imagesc
     if dosmooth
         imagesc(imgaussfilt(r(idx,idx),1), [clim(1) clim(2)]);
     else
         imagesc(r(idx,idx), [clim(1) clim(2)]);
     end
-    
+
     if docolorbar
         colorbar;
         set(gcf, 'color', 'w');
     else
         set(gcf, 'color', 'w');
     end
-    
+
     axis off;
+    %set(gca, 'box', 'off');
     colormap(col_map);
-    
+
     set(gca, 'xlim', [-.5 size_r+1.5], 'ylim', [-.5 size_r+1.5])
     hold on;
-    
+
     if dolines_1st
-        % one
         for i = 1.5:1:(size_r-.5)
             line([i i], [.5 size_max], 'color', lcolor(1,:), 'linewidth', lwidth(1));
             line([.5 size_max], [i i], 'color', lcolor(1,:), 'linewidth', lwidth(1));
         end
     end
-    
+
     if do_sig
         % one
         [b, a, c] = find(sig_matrix~=0);
@@ -343,7 +354,7 @@ if do_display
             end
         end
     end
-    
+
     if dolines_2nd
         % five
         for i = .5:5:(size_r+.5)
@@ -351,23 +362,23 @@ if do_display
             line([.5 size_max], [i i], 'color', lcolor(2,:), 'linewidth', lwidth(2));
         end
     end
-    
+
     if dolines_out
         for i = [.5 size_r+.5]
             line([i i], [.5 size_max], 'color', lcolor(3,:), 'linewidth', lwidth(3));
             line([.5 size_max], [i i], 'color', lcolor(3,:), 'linewidth', lwidth(3));
         end
     end
-    
+
     if dogrouptick
         if ~display_group_mean && ~display_group_sum
             n_c = histc(sorted_group, unique(sorted_group));
         else
             n_c = ones(size(n_c));
         end
-        
+
         set(gca, 'Clipping', 'off');
-        
+
         for i = 1:numel(n_c)
             if i == numel(n_c) && strcmp(tickstyle, 'edge')
                 break;
@@ -383,26 +394,26 @@ if do_display
             xtick_y2 = ytick_x1;
             line(xtick_x, xtick_y1, 'color', tickcolor, 'linewidth', tickwidth);
             if ~do_triangle; line(xtick_x, xtick_y2, 'color', tickcolor, 'linewidth', tickwidth); end
-            
+
         end
     end
-    
+
     if dogroupline
-        n_c = histc(sorted_group, unique(sorted_group));        
+        n_c = histc(sorted_group, unique(sorted_group));
         n_c = [0; n_c(:)];
         for i = 1:(numel(n_c)-1)
-            
+
             xy1 = [sum(n_c(1:i)) sum(n_c(1:i))]+0.5;
             xy2 = [sum(n_c(1:(i+1))) sum(n_c(1:(i+1)))]+0.5;
-            
+
             line([xy1(1) xy1(1)], [xy1(2), xy2(2)], 'color', glcolor, 'linewidth', glwidth);
             line([xy1(1) xy2(1)], [xy1(2) xy1(2)], 'color', glcolor, 'linewidth', glwidth);
             line([xy2(1) xy2(1)], [xy1(2) xy2(2)], 'color', glcolor, 'linewidth', glwidth);
             line([xy1(1) xy2(1)], [xy2(2) xy2(2)], 'color', glcolor, 'linewidth', glwidth);
-            
+
         end
     end
-    
+
     if display_group_color
         if ~display_group_mean && ~display_group_sum
             n_c = histc(sorted_group, unique(sorted_group));
@@ -434,7 +445,7 @@ if do_display
             end
         end
     end
-    
+
     if do_triangle
         ws = 3;
         patch([-ws, size(r,1)+1+ws, size(r,1)+1+ws], [-ws, -ws, size(r,1)+1+ws], 'w', 'edgecolor', 'w');
@@ -442,7 +453,32 @@ if do_display
             patch([.5, .5, size(r,1)+.5], [.5, size(r,1)+.5, size(r,1)+.5], 'w', 'edgecolor', triangle_col, 'facealpha', 0, 'LineWidth', triangle_width);
         end
     end
-    
+    if do_stairs
+        stair_x = 0.5; 
+        stair_y = 1.5;
+        for k = 1:size_r-1
+            stair_x = [stair_x, k+0.5, k+0.5];
+            stair_y = [stair_y, k+0.5, k+1.5];
+        end
+        stair_x = [stair_x, size_r-0.5];
+        stair_y = [stair_y, size_r+0.5];
+
+        patch_x = [stair_x, size_max, size_max, 0.5, 0.5];
+        patch_y = [stair_y, size_max, 0.5, 0.5, 1.5];
+        patch(patch_x, patch_y, 'w', 'edgecolor', 'w');
+        
+        line([0.5, 0.5], [1.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
+        line([0.5, size_r-0.5], [size_r+0.5, size_r+0.5], 'color', lcolor(3,:), 'linewidth', lwidth(3));
+        
+        border_x = [stair_x, 0.5];          
+        border_y = [stair_y, size_r+0.5];   
+                
+        patch(border_x, border_y, 'w', ...
+              'FaceColor', 'none', ...
+              'EdgeColor', stairs_col, ...
+              'LineWidth', stairs_width, ...
+              'LineJoin', 'round');
+    end
     out.h = h;
     out.color_lim = clim;
     out.color_lim_descript = clim_descript;
