@@ -105,6 +105,8 @@ do_cerebellum = true;
 do_ellipsoid = false;
 node_alpha = 1;
 
+basecolor = [.5 .5 .5];
+
 for i = 1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
@@ -165,6 +167,8 @@ for i = 1:length(varargin)
                 do_cerebellum = false;
             case {'ellipsoid'}
                 do_ellipsoid = true;
+            case {'basecolor'}
+                basecolor = varargin{i+1};
                 
         end
     end
@@ -224,10 +228,10 @@ end
 
 % cerebellum
 % if do_cerebellum, cluster_surf(region, which('surf_BrainMesh_Cerebellum_by_SLF.mat'), 2); end
-draw_surf(which('surf_BrainMesh_Cerebellum_by_SLF.mat'));
+draw_surf(which('surf_BrainMesh_Cerebellum_by_SLF.mat'),basecolor);
 % whole-brain 
 % cluster_surf(region, cortex, 2);
-draw_surf(cortex);
+draw_surf(cortex,basecolor);
 
 % make glass brains
 h = get(gca, 'children');
@@ -363,11 +367,11 @@ if do_neg && ~isempty(neg_ab)
 end
 end
 
-function draw_surf(P)
+function draw_surf(P,basecolor)
 
 
 actcolor = [1 1 1];
-basecolor = [.5 .5 .5]
+%basecolor = [.5 .5 .5];
 mind = 2;
 ovlcolor = [0 1 1];
 
