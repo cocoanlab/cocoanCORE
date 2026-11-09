@@ -369,14 +369,34 @@ end
 %% Colorbar
 if do_colorbar
     
-    if do_surface && ~do_all 
+    if do_surface && ~do_all
         p = 0.05 * 3; % unit for determining position and size of colorbar
         q = 0.7; % scaling factor of height: figure size of do_all is 3/2 of do_surface.
-    elseif do_all
+    else % do_all or montage_only
         p = 0.05; % unit for determining position and size of colorbar
         q = 1; % scaling factor of height: figure size of do_all is 3/2 of do_surface.
     end
-    
+
+    % montage_only: out.colorbar is not created (no surface), so build it from the montage colormap
+    if ~isstruct(out) || ~isfield(out, 'colorbar')
+        n = 64;
+        sc = {[.23 1 1], [0.17 0.61 1], [0.99 0.46 0], [1 1 0]}; % splitcolor used in brain_montage
+        cr = o2.activation_maps{end}.cmaprange; % actual [minneg maxneg minpos maxpos] used by addblobs
+        vals = cat(2, r.Z);
+        out = struct;
+        out.colorbar = struct;
+        if numel(cr) == 4
+            if any(vals > 0)
+                out.colorbar.pos = [linspace(cr(3), cr(4), n)', ...
+                    [linspace(sc{3}(1), sc{4}(1), n)', linspace(sc{3}(2), sc{4}(2), n)', linspace(sc{3}(3), sc{4}(3), n)']];
+            end
+            if any(vals < 0)
+                out.colorbar.neg = [linspace(cr(1), cr(2), n)', ...
+                    [linspace(sc{1}(1), sc{2}(1), n)', linspace(sc{1}(2), sc{2}(2), n)', linspace(sc{1}(3), sc{2}(3), n)']];
+            end
+        end
+    end
+
     if isfield(out.colorbar, 'pos') && isfield(out.colorbar, 'neg')
         sf = 1 / (1 + 2*p); % scaling factor of overall size; here two colorbars
         cb_ax_pos = {[(1+p*2/5)*sf, (1-q*sf)/2, (p*2/5)*sf, q*sf], ...
@@ -611,10 +631,12 @@ for i = 1:length(vars)
         end
     end
 end
-if ~contains('underlaysty_name','.nii')
+if ~contains(underlaysty_name, '.nii')
     underlaysty = canlab_get_underlay_image(underlaysty_name);
+else
+    underlaysty = underlaysty_name; % use the .nii file path directly
 end
-o2 = fmridisplay('overlay',underlaysty);
+o2 = fmridisplay('overlay',underlaysty, 'nocontroller'); % suppress the CANlab display controller for right now;
 
 if ~do_all
     
